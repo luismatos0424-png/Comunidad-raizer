@@ -4,228 +4,244 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Elraizercommunity - Comunidad Raizer</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#08080d;--surface:#141419;--surface2:#1a1a22;--green:#00ff88;--purple:#a855f7;--red:#ff0000}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:radial-gradient(900px 400px at 15% 0%,rgba(0,255,136,.12),transparent 60%),radial-gradient(900px 500px at 90% 10%,rgba(168,85,247,.16),transparent 60%),var(--bg);color:#f2f4ff;font-family:Rajdhani,system-ui,sans-serif}
-a{color:var(--green);text-decoration:none}
+body{font-family:Rajdhani,system-ui,sans-serif;background:#08080D;color:#fff}
 .font-display{font-family:Orbitron,sans-serif}
-/* TOP */
-.top{position:sticky;top:0;z-index:50;background:rgba(8,8,13,.92);backdrop-filter:blur(12px);border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;padding:12px 20px}
-.logo-wrap{display:flex;align-items:center;gap:12px}
-.logo-box{width:44px;height:44px;border-radius:12px;background:var(--green);display:grid;place-items:center;font-family:Orbitron;font-weight:900;font-size:24px;color:#04120a;box-shadow:0 0 24px rgba(0,255,136,.45)}
-.logo-text{line-height:1}
-.logo-text b{font-family:Orbitron;font-size:18px;letter-spacing:.5px}
-.logo-text b span{color:var(--green)}
-.logo-text small{display:block;font-size:10px;letter-spacing:4px;color:#999;font-weight:700;margin-top:2px}
-.btn{background:var(--green);color:#04120a;border:0;padding:11px 20px;border-radius:999px;font-weight:800;cursor:pointer;font-family:Rajdhani;font-size:15px}
-.btn:hover{filter:brightness(1.1)}
-.btn-ghost{background:#1a1a22;color:#fff;border:1px solid #333;padding:10px 18px;border-radius:999px;cursor:pointer;font-weight:700;font-family:Rajdhani;font-size:15px}
-.btn-ghost:hover{border-color:var(--green)}
-.small{border:1px solid #333;background:#1a1a22;color:#fff;padding:8px 12px;border-radius:999px;cursor:pointer;font-size:13px;font-weight:700;font-family:Rajdhani}
-.small.primary{background:var(--green);color:#04120a;border-color:var(--green)}
-.small.danger{background:#2a1212;color:#ff8080;border-color:#552222}
-/* HERO */
-.hero{padding:44px 20px 10px;max-width:1100px;margin:0 auto;text-align:center}
-.hero h1{font-family:Orbitron;font-size:56px;line-height:.95;letter-spacing:-1px}
-.hero h1 em{font-style:normal;color:var(--green)}
-.hero p{color:#b9b9c5;margin:16px auto;max-width:720px;line-height:1.6;font-size:18px}
-.hero-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
-.stats{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:22px auto;max-width:900px}
-.stat{background:#14141c;border:1px solid #23232e;border-radius:16px;padding:14px 20px;min-width:140px}
-.stat b{font-size:28px;display:block;font-family:Orbitron}
-.stat span{color:#999;font-size:13px;font-weight:600}
-/* FILTERS */
-.filters{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:14px 20px}
-.filter{background:#17171f;border:1px solid #2a2a35;color:#ddd;padding:9px 18px;border-radius:999px;cursor:pointer;font-weight:700;font-family:Rajdhani}
-.filter.active{background:var(--green);color:#000;border-color:var(--green);font-weight:800}
-/* ADS */
-.ad-top{max-width:1100px;margin:10px auto;padding:0 20px}
-.ad{background:#101018;border:1px dashed #333;border-radius:14px;padding:16px;text-align:center;color:#888;font-size:13px;font-weight:700;letter-spacing:.5px}
-.ad b{color:#ddd}
-/* LAYOUT */
-.wrap{max-width:1100px;margin:0 auto;padding:10px 20px 30px;display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.card{background:#14141c;border:1px solid #23232e;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;transition:transform .15s,border-color .15s}
-.card:hover{transform:translateY(-3px);border-color:#00ff8866}
-.card img{width:100%;height:180px;object-fit:cover;background:#0a0a0f}
-.card-body{padding:16px;display:flex;flex-direction:column;gap:8px;flex:1}
-.badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.5px;width:fit-content}
-.badge.YouTube{background:#ff0000;color:#fff}
-.badge.TikTok{background:#fff;color:#000}
-.badge.Kick{background:var(--green);color:#000}
-.badge.Juegos{background:var(--purple);color:#fff}
-.game{font-size:12px;color:var(--green);font-weight:800;letter-spacing:.5px;text-transform:uppercase}
-.card h3{font-size:20px;line-height:1.2;font-weight:800}
-.card p{color:#b9b9c5;font-size:15px;line-height:1.5;flex:1}
-.meta{font-size:12px;color:#888;font-weight:600}
-.card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
-.comments{margin-top:12px;background:#0f0f15;border-radius:12px;padding:10px;display:none}
-.comments.open{display:block}
-.comment{border-bottom:1px solid #222;padding:8px 0;font-size:14px}
-.comment b{font-size:13px}
-.comments input,.comments textarea,.admin-box input,.admin-box textarea,.admin-box select{width:100%;background:#0f0f15;border:1px solid #2a2a35;border-radius:10px;padding:10px;color:#fff;font-family:Rajdhani;font-size:15px;margin-top:8px}
-.comments textarea{resize:vertical}
-.sidebar{display:flex;flex-direction:column;gap:14px}
-.side-box{background:#14141c;border:1px solid #23232e;border-radius:16px;padding:16px;line-height:1.6;color:#b9b9c5;font-size:15px}
-.side-box h4{color:#fff;font-size:17px;margin-bottom:8px}
-/* ADMIN */
-.admin{max-width:1100px;margin:0 auto;padding:0 20px 20px;display:none}
-.admin.open{display:block}
-.admin-box{background:#14141c;border:1px solid #23232e;border-radius:18px;padding:20px}
-.admin-box h3{font-family:Orbitron;font-size:20px}
-.admin-box label{display:block;margin-top:14px;font-size:13px;font-weight:800;letter-spacing:.5px;color:#aaa}
-.admin-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.admin-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.post-item{display:flex;gap:12px;align-items:center;justify-content:space-between;background:#0f0f15;border:1px solid #222;padding:10px;border-radius:12px;margin-top:10px;font-size:14px}
-.post-item b{color:#fff}
-/* MODAL */
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;place-items:center;z-index:100;padding:16px}
-.modal.open{display:grid}
-.modal-box{background:#14141c;border:1px solid #333;border-radius:18px;padding:22px;width:100%;max-width:420px}
-.modal-box h2{font-family:Orbitron}
-.modal-box p{color:#aaa;margin:6px 0 14px}
-.modal-box input{width:100%;background:#0f0f15;border:1px solid #2a2a35;border-radius:10px;padding:12px;color:#fff;margin-top:8px;font-family:Rajdhani;font-size:15px}
-.err{color:#ff8080;font-size:13px;min-height:18px;margin-top:8px;font-weight:700}
-.modal-large{max-width:720px;max-height:90vh;overflow:auto}
-.detail-cover{width:100%;height:280px;object-fit:cover;border-radius:14px;background:#0a0a0f}
-.detail-steps{background:#0f0f15;border-radius:12px;padding:14px;margin-top:12px;line-height:1.7;color:#ddd}
-.detail-steps ol{padding-left:18px}
-.req-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-.req-box{background:#0f0f15;border:1px solid #222;border-radius:12px;padding:12px;font-size:14px;line-height:1.6;color:#b9b9c5}
-.req-box b{color:#fff}
-footer{border-top:1px solid #222;padding:22px;text-align:center;color:#888;font-size:13px;line-height:1.6}
-.empty{text-align:center;color:#888;padding:30px;border:1px dashed #333;border-radius:16px}
-@media(max-width:900px){.wrap{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.hero h1{font-size:38px}.admin-row,.admin-row-3,.req-grid{grid-template-columns:1fr}}
+.glass{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.10);backdrop-filter:blur(10px)}
+.line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.input{margin-top:8px;width:100%;border-radius:1rem;border:1px solid rgba(255,255,255,.10);background:rgba(8,8,13,.80);padding:14px 16px;color:#fff;font-size:15px}
+.input:focus{outline:none;border-color:#00FF88}
+select.input option{background:#101017}
+.cover-grad-YouTube{background:linear-gradient(135deg,#3A0A12,#1A0A2E,#08080D)}
+.cover-grad-TikTok{background:linear-gradient(135deg,#1B1B24,#2A1230,#08080D)}
+.cover-grad-Kick{background:linear-gradient(135deg,#06281A,#0E2B22,#08080D)}
+.cover-grad-Juegos{background:linear-gradient(135deg,#26103D,#101021,#08080D)}
 </style>
 </head>
-<body>
+<body class="min-h-screen bg-[#08080D] text-white antialiased" style="background:radial-gradient(900px 400px at 15% 0%,rgba(0,255,136,.10),transparent 60%),radial-gradient(900px 500px at 90% 10%,rgba(168,85,247,.14),transparent 60%),#08080D">
 
-<header class="top">
-  <div class="logo-wrap">
-    <div class="logo-box">R</div>
-    <div class="logo-text"><b>ELRAIZER<span>COMMUNITY</span></b><small>COMUNIDAD RAIZER</small></div>
-  </div>
-  <div style="display:flex;gap:8px">
-    <button class="btn-ghost" onclick="document.getElementById('posts').scrollIntoView({behavior:'smooth'})">Ver posts</button>
-    <button class="btn" onclick="openLogin()">Acceder</button>
+<!-- HEADER - IGUAL AL ELRAIZERCOMMUNITY -->
+<header class="sticky top-0 z-50 border-b border-white/[.07] bg-[#08080D]/90 backdrop-blur">
+  <div class="mx-auto flex max-w-[1280px] items-center justify-between gap-3 px-4 py-3 sm:px-6">
+    <div class="flex items-center gap-3">
+      <div class="grid h-11 w-11 place-items-center rounded-[14px] bg-[#00FF88] font-display text-2xl font-black text-black shadow-[0_0_32px_rgba(0,255,136,.45)]">R</div>
+      <span class="leading-none">
+        <span class="block truncate font-display text-[15px] font-black tracking-wide sm:text-lg">ELRAIZER<span class="text-[#00FF88]">COMMUNITY</span></span>
+        <span class="mt-1 block text-[10px] font-bold tracking-[.30em] text-slate-400">COMUNIDAD RAIZER</span>
+      </span>
+    </div>
+    <div class="flex shrink-0 items-center gap-2.5">
+      <a href="#posts" class="hidden sm:block rounded-full border border-white/20 bg-white/[.04] px-5 py-2.5 text-sm font-bold">Ver posts</a>
+      <button onclick="openLogin()" class="rounded-full bg-[#00FF88] px-6 py-2.5 text-sm font-bold text-black shadow-[0_8px_28px_rgba(0,255,136,.30)] transition hover:brightness-110">Acceder</button>
+    </div>
   </div>
 </header>
 
-<section class="hero">
-  <h1>EL<em>RAIZER</em><br>COMMUNITY</h1>
-  <p>Videos, juegos y links de YouTube, TikTok y Kick. Todo lo que juego en mis directos, con links de descarga y como instalarlo.</p>
-  <div class="hero-actions">
-    <button class="btn" onclick="document.getElementById('posts').scrollIntoView({behavior:'smooth'})">Ver posts ↓</button>
-    <button class="btn-ghost" onclick="openLogin()">Acceder</button>
+<main id="inicio" class="mx-auto max-w-[1280px] px-4 pb-20 sm:px-6">
+
+  <!-- HERO - IGUAL: Bienvenidos a mi comunidad -->
+  <section class="pt-8 sm:pt-10">
+    <div class="inline-flex items-center gap-2 rounded-full border border-[#00FF88]/30 bg-[#00FF88]/10 px-4 py-1.5 text-xs font-bold text-[#00FF88]">
+      <span class="h-2 w-2 rounded-full bg-[#00FF88] animate-pulse"></span> COMUNIDAD ACTIVA
+    </div>
+    <h1 class="mt-6 font-display text-[clamp(2.2rem,6.2vw,4.6rem)] font-black leading-[1.04] tracking-tight">Bienvenidos a<br>mi <span class="bg-gradient-to-r from-[#00FF88] to-[#A855F7] bg-clip-text text-transparent">comunidad</span></h1>
+    <p class="mt-5 max-w-xl text-[17px] leading-relaxed text-slate-300 sm:text-lg">Videos, juegos y links de YouTube, TikTok y Kick. Todo lo que juego en mis directos, con enlaces de descarga y cómo instalarlo, paso a paso.</p>
+    <div class="mt-8 flex flex-wrap gap-3">
+      <a href="#posts" class="rounded-full bg-[#00FF88] px-7 py-3.5 font-display text-sm font-bold text-black shadow-[0_12px_32px_rgba(0,255,136,.30)] transition hover:brightness-110">Ver posts</a>
+      <button onclick="openLogin()" class="rounded-full border border-white/20 bg-white/[.04] px-7 py-3.5 font-display text-sm font-bold backdrop-blur transition hover:bg-white/10">Acceder</button>
+    </div>
+    <div class="mt-10 grid max-w-xl grid-cols-3 gap-3">
+      <div class="glass rounded-3xl p-4 sm:p-5">
+        <div class="flex items-center justify-between"><span>📄</span><span class="hidden text-[10px] font-bold uppercase tracking-widest text-slate-500 sm:block">Posts</span></div>
+        <div id="statPosts" class="mt-3 font-display text-2xl font-black text-white sm:text-3xl">0</div>
+        <div class="mt-1 text-[11px] font-bold uppercase tracking-widest text-slate-400 sm:hidden">Posts</div>
+        <div class="mt-1 hidden text-xs font-semibold text-slate-400 sm:block">En la comunidad</div>
+      </div>
+      <div class="glass rounded-3xl p-4 sm:p-5">
+        <div class="flex items-center justify-between"><span>❤️</span><span class="hidden text-[10px] font-bold uppercase tracking-widest text-slate-500 sm:block">Likes</span></div>
+        <div id="statLikes" class="mt-3 font-display text-2xl font-black text-white sm:text-3xl">0</div>
+        <div class="mt-1 text-[11px] font-bold uppercase tracking-widest text-slate-400 sm:hidden">Likes</div>
+        <div class="mt-1 hidden text-xs font-semibold text-slate-400 sm:block">En la comunidad</div>
+      </div>
+      <div class="glass rounded-3xl p-4 sm:p-5">
+        <div class="flex items-center justify-between"><span>👁️</span><span class="hidden text-[10px] font-bold uppercase tracking-widest text-slate-500 sm:block">Visitas</span></div>
+        <div id="statVisitas" class="mt-3 font-display text-2xl font-black text-white sm:text-3xl">0</div>
+        <div class="mt-1 text-[11px] font-bold uppercase tracking-widest text-slate-400 sm:hidden">Visitas</div>
+        <div class="mt-1 hidden text-xs font-semibold text-slate-400 sm:block">En la comunidad</div>
+      </div>
+    </div>
+    <div class="relative mt-10 flex items-center gap-3 rounded-2xl border border-white/10 bg-black/30 p-4 backdrop-blur lg:max-w-xl">
+      <span class="shrink-0 text-orange-400">🔥</span>
+      <span class="text-[15px] text-slate-300">Hoy en la comunidad: <b class="text-white">Minecraft, GTA V y Valorant</b> con guías paso a paso.</span>
+      <span class="ml-auto hidden h-5 w-5 shrink-0 text-[#A855F7] sm:block">✦</span>
+    </div>
+  </section>
+
+  <!-- PUBLICIDAD 728x90 - IGUAL -->
+  <section aria-label="Publicidad" class="mt-6 overflow-hidden rounded-3xl border border-dashed border-white/15 bg-white/[.02]">
+    <div class="flex min-h-[96px] flex-col items-center justify-center px-4 py-5 text-center">
+      <span class="text-[11px] font-bold tracking-[.28em] text-slate-500">PUBLICIDAD</span>
+      <p class="mt-1.5 font-display text-sm font-bold text-slate-300">Espacio publicitario 728x90</p>
+      <p class="mt-1 text-xs text-slate-500">Aquí va tu anuncio de Google AdSense / patrocinador</p>
+    </div>
+  </section>
+
+  <!-- PANEL ADMIN - IGUAL: rounded-[28px] verde -->
+  <section id="adminPanel" class="mt-8 hidden rounded-[28px] border border-[#00FF88]/20 bg-gradient-to-b from-[#10161A] to-[#0D0D14] p-5 shadow-2xl sm:p-7">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h2 class="font-display text-xl font-black sm:text-2xl">Panel admin</h2>
+        <p class="mt-1.5 text-[15px] text-slate-400">Sesión activa. Crea, edita y elimina posts.</p>
+      </div>
+      <button onclick="clearForm()" class="rounded-full border border-white/15 px-5 py-2.5 text-sm font-bold transition hover:bg-white/5">Limpiar formulario</button>
+    </div>
+    <div class="mt-6 grid gap-5">
+      <div class="grid gap-5 md:grid-cols-2">
+        <label class="text-sm font-bold">Título<input id="fTitulo" placeholder="Título del post" class="input"></label>
+        <label class="text-sm font-bold">Juego<input id="fJuego" placeholder="Nombre del juego" class="input"></label>
+      </div>
+      <div class="grid gap-5 md:grid-cols-3">
+        <label class="text-sm font-bold">Plataforma
+          <select id="fPlataforma" class="input"><option>YouTube</option><option>TikTok</option><option>Kick</option><option>Juegos</option></select>
+        </label>
+        <label class="text-sm font-bold">Categoría
+          <select id="fCategoria" class="input"><option>Juego</option><option>Mod</option><option>Programa</option><option>Guía</option></select>
+        </label>
+        <label class="text-sm font-bold">Link de imagen (portada)<input id="fImagen" placeholder="https://... link de imagen" class="input"></label>
+      </div>
+      <label class="text-sm font-bold">Descripción corta (tarjeta)<input id="fDescCorta" placeholder="Ej: El pack visual que uso en directo..." class="input"></label>
+      <label class="text-sm font-bold">Descripción larga / Cómo instalar<textarea id="fDesc" rows="3" placeholder="Explica aquí cómo instalar paso a paso..." class="input"></textarea></label>
+      <div class="grid gap-5 md:grid-cols-2">
+        <label class="text-sm font-bold">Link del video<input id="fVideo" placeholder="https://youtube.com/... / tiktok / kick" class="input"></label>
+        <label class="text-sm font-bold">Link de descarga<input id="fDescarga" placeholder="Link oficial de descarga" class="input"></label>
+      </div>
+      <div class="grid gap-5 md:grid-cols-2">
+        <label class="text-sm font-bold">Texto del botón de descarga<input id="fDescargaLabel" value="Descargar juego" class="input"></label>
+        <label class="text-sm font-bold">Tags (separados por coma)<input id="fTags" placeholder="minecraft, shaders, kick" class="input"></label>
+      </div>
+      <label class="text-sm font-bold">Pasos (uno por línea)<textarea id="fPasos" rows="4" placeholder="Instala Java 17&#10;Descarga OptiFine&#10;Abre Minecraft y entra en Shaders" class="input"></textarea></label>
+      <div class="grid gap-5 md:grid-cols-2">
+        <label class="text-sm font-bold">Requisitos mínimos<textarea id="fReqMin" rows="2" placeholder="CPU i3, 8 GB RAM..." class="input"></textarea></label>
+        <label class="text-sm font-bold">Requisitos recomendados<textarea id="fReqRec" rows="2" placeholder="CPU i5, 16 GB RAM, RTX..." class="input"></textarea></label>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <button onclick="savePost()" class="rounded-full bg-[#00FF88] px-7 py-3.5 font-display text-sm font-bold text-black shadow-[0_12px_32px_rgba(0,255,136,.30)]">Guardar post</button>
+        <button onclick="logout()" class="rounded-full border border-white/15 px-6 py-3.5 text-sm font-bold">Cerrar sesión</button>
+      </div>
+      <div id="adminMsg" class="text-sm font-bold text-[#00FF88]"></div>
+      <h4 class="font-display font-bold">Mis posts</h4>
+      <div id="adminList"></div>
+    </div>
+  </section>
+
+  <!-- POSTS + SIDEBAR - IGUAL: grid lg:grid-cols-[1fr_300px] -->
+  <div class="mt-12 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
+    <div class="min-w-0">
+      <div id="posts" class="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p class="text-xs font-bold tracking-[.28em] text-[#00FF88]">COMUNIDAD</p>
+          <h2 class="mt-2 font-display text-[26px] font-black leading-tight sm:text-3xl">Últimos posts</h2>
+          <p class="mt-1.5 text-[15px] text-slate-400">Guías, mods y configuraciones de los directos.</p>
+        </div>
+      </div>
+      <div class="mt-5 flex flex-wrap gap-2" id="filters">
+        <button onclick="setFilter('Todos',this)" class="filter-btn rounded-full px-5 py-2.5 text-sm font-bold transition bg-[#00FF88] text-black shadow-[0_8px_24px_rgba(0,255,136,.30)]">Todos</button>
+        <button onclick="setFilter('YouTube',this)" class="filter-btn rounded-full px-5 py-2.5 text-sm font-bold transition border border-white/10 bg-white/[.04] text-slate-300 hover:bg-white/[.08]">YouTube</button>
+        <button onclick="setFilter('TikTok',this)" class="filter-btn rounded-full px-5 py-2.5 text-sm font-bold transition border border-white/10 bg-white/[.04] text-slate-300 hover:bg-white/[.08]">TikTok</button>
+        <button onclick="setFilter('Kick',this)" class="filter-btn rounded-full px-5 py-2.5 text-sm font-bold transition border border-white/10 bg-white/[.04] text-slate-300 hover:bg-white/[.08]">Kick</button>
+        <button onclick="setFilter('Juegos',this)" class="filter-btn rounded-full px-5 py-2.5 text-sm font-bold transition border border-white/10 bg-white/[.04] text-slate-300 hover:bg-white/[.08]">Juegos</button>
+      </div>
+      <div id="grid" class="mt-6 grid gap-6 sm:grid-cols-2"></div>
+      <div id="empty" class="mt-8 hidden rounded-[24px] border border-white/10 bg-white/[.02] p-10 text-center">
+        <div class="mx-auto text-[#00FF88] text-2xl">📄</div>
+        <h3 class="mt-3 font-display text-lg font-bold">Sin resultados</h3>
+        <p class="mt-1 text-sm text-slate-400">Prueba con otro filtro o crea el primer post como admin.</p>
+      </div>
+      <div id="loadMsg" class="mt-10 text-slate-400">Cargando comunidad…</div>
+    </div>
+
+    <!-- SIDEBAR - IGUAL -->
+    <aside class="grid gap-6">
+      <section class="rounded-[24px] border border-white/10 bg-[#101017] p-5 sm:p-6">
+        <h3 class="font-display font-bold">Sígueme</h3>
+        <div class="mt-4 grid gap-2.5">
+          <a href="https://youtube.com/@elraizer" target="_blank" class="flex items-center justify-between rounded-2xl bg-[#FF0000]/[.12] px-4 py-3.5 text-sm font-bold transition hover:bg-[#FF0000]/[.20]">YouTube <span>↗</span></a>
+          <a href="https://tiktok.com/@elraizer" target="_blank" class="flex items-center justify-between rounded-2xl bg-white/[.05] px-4 py-3.5 text-sm font-bold transition hover:bg-white/10">TikTok <span>↗</span></a>
+          <a href="https://kick.com/elraizer" target="_blank" class="flex items-center justify-between rounded-2xl bg-[#00FF88]/[.10] px-4 py-3.5 text-sm font-bold text-[#00FF88] transition hover:bg-[#00FF88]/[.16]">Kick <span>↗</span></a>
+        </div>
+        <p class="mt-4 text-xs leading-relaxed text-slate-400">Solo enlaces oficiales. No alojamos archivos pesados.</p>
+      </section>
+      <section class="rounded-[24px] border border-white/10 bg-[#101017] p-5 sm:p-6">
+        <h3 class="font-display font-bold">ℹ️ Cómo funciona</h3>
+        <p class="mt-3 text-sm leading-relaxed text-slate-400">1. Yo publico el video y el juego.<br>2. Tú le das like y comentas sin registrarte.<br>3. Descargas solo desde el link oficial que pongo.</p>
+      </section>
+      <section class="overflow-hidden rounded-3xl border border-dashed border-white/15 bg-white/[.02]">
+        <div class="flex min-h-[250px] flex-col items-center justify-center px-4 py-5 text-center">
+          <span class="text-[11px] font-bold tracking-[.28em] text-slate-500">PUBLICIDAD</span>
+          <p class="mt-1.5 font-display text-sm font-bold text-slate-300">Espacio 300x250</p>
+        </div>
+      </section>
+    </aside>
   </div>
-  <div class="stats">
-    <div class="stat"><b id="statPosts">0</b><span>Posts</span></div>
-    <div class="stat"><b id="statLikes">0</b><span>Likes</span></div>
-    <div class="stat"><b id="statVisitas">0</b><span>Visitas</span></div>
-  </div>
-</section>
-
-<div class="filters" id="filters">
-  <button class="filter active" onclick="setFilter('Todos',this)">Todos</button>
-  <button class="filter" onclick="setFilter('YouTube',this)">YouTube</button>
-  <button class="filter" onclick="setFilter('TikTok',this)">TikTok</button>
-  <button class="filter" onclick="setFilter('Kick',this)">Kick</button>
-  <button class="filter" onclick="setFilter('Juegos',this)">Juegos</button>
-</div>
-
-<div class="ad-top"><div class="ad"><b>ESPACIO PUBLICITARIO — 728 x 90</b><br><span style="font-size:11px">Aquí va tu anuncio de Google AdSense / patrocinador</span></div></div>
-
-<div class="admin" id="adminPanel"><div class="admin-box">
-  <h3>Panel Admin — Nuevo Post</h3>
-  <p style="color:#aaa;margin-top:6px;font-size:14px">Solo tú puedes publicar. Todo se guarda en Supabase, no solo en el navegador.</p>
-
-  <label>Título del post *</label>
-  <input id="fTitulo" placeholder="Ej: Minecraft con Shaders que uso en Directo">
-
-  <div class="admin-row">
-    <div><label>Juego / Programa</label><input id="fJuego" placeholder="Ej: Minecraft, GTA V, Valorant"></div>
-    <div><label>Plataforma</label><select id="fPlataforma"><option>YouTube</option><option>TikTok</option><option>Kick</option><option>Juegos</option></select></div>
-  </div>
-
-  <div class="admin-row">
-    <div><label>Categoría</label><select id="fCategoria"><option>Juego</option><option>Mod</option><option>Programa</option><option>Guía</option></select></div>
-    <div><label>Link de imagen (portada)</label><input id="fImagen" placeholder="https://... pega el link de la imagen"></div>
-  </div>
-
-  <label>Descripción corta (la que se ve en la tarjeta)</label>
-  <textarea id="fDescCorta" rows="2" placeholder="Ej: El pack visual que uso en directo, shaders suaves y rendimiento estable."></textarea>
-
-  <label>Descripción larga / Cómo instalar (se ve al abrir el post)</label>
-  <textarea id="fDesc" rows="4" placeholder="Explica aquí cómo instalar paso a paso, consejos, etc."></textarea>
-
-  <div class="admin-row">
-    <div><label>Link del video</label><input id="fVideo" placeholder="https://youtube.com/... / tiktok / kick"></div>
-    <div><label>Link de descarga</label><input id="fDescarga" placeholder="Link oficial de descarga"></div>
-  </div>
-
-  <div class="admin-row">
-    <div><label>Texto del botón de descarga</label><input id="fDescargaLabel" placeholder="Descargar juego" value="Descargar juego"></div>
-    <div><label>Tags (separados por coma)</label><input id="fTags" placeholder="minecraft, shaders, kick"></div>
-  </div>
-
-  <label>Pasos (uno por línea)</label>
-  <textarea id="fPasos" rows="4" placeholder="Instala Java 17&#10;Descarga OptiFine&#10;Abre Minecraft y entra en Shaders"></textarea>
-
-  <div class="admin-row">
-    <div><label>Requisitos mínimos</label><textarea id="fReqMin" rows="2" placeholder="CPU i3, 8 GB RAM..."></textarea></div>
-    <div><label>Requisitos recomendados</label><textarea id="fReqRec" rows="2" placeholder="CPU i5, 16 GB RAM, RTX..."></textarea></div>
-  </div>
-
-  <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
-    <button class="btn" onclick="savePost()">Guardar post</button>
-    <button class="btn-ghost" onclick="logout()">Cerrar sesión</button>
-  </div>
-  <div id="adminMsg" style="margin-top:12px;color:#00ff88;font-weight:700"></div>
-  <h4 style="margin-top:18px">Mis posts</h4><div id="adminList"></div>
-</div></div>
-
-<main class="wrap" id="posts">
-  <div>
-    <div class="grid" id="grid"></div>
-    <div id="empty" style="display:none" class="empty">Aún no hay posts en esta categoría.<br>Entra como admin y crea el primero.</div>
-  </div>
-  <aside class="sidebar">
-    <div class="ad"><b>ANUNCIO<br>300 x 250</b><br><span style="font-size:11px">Espacio publicitario</span></div>
-    <div class="side-box"><h4>📺 Sígueme</h4><p>Encuentra todos mis directos, gameplays y los juegos que uso, con sus links oficiales de descarga.<br><br>• YouTube<br>• TikTok<br>• Kick</p></div>
-    <div class="side-box"><h4>ℹ️ Cómo funciona</h4><p>1. Yo publico el video y el juego.<br>2. Tú le das like y comentas sin registrarte.<br>3. Descargas solo desde el link oficial que pongo.</p></div>
-    <div class="ad"><b>ANUNCIO<br>300 x 600</b><br><span style="font-size:11px">Espacio publicitario lateral</span></div>
-  </aside>
 </main>
 
-<footer>Elraizercommunity — Comunidad Raizer • YouTube • TikTok • Kick<br>Los links son oficiales. No subas archivos pesados, solo links.</footer>
+<footer class="border-t border-white/[.07] bg-black/30">
+  <div class="mx-auto flex max-w-[1280px] flex-col items-start justify-between gap-5 px-4 py-9 sm:flex-row sm:items-center sm:px-6">
+    <div>
+      <p class="font-display font-black tracking-wide">ELRAIZER<span class="text-[#00FF88]">COMMUNITY</span></p>
+      <p class="mt-1.5 text-sm text-slate-400">Elraizercommunity - Comunidad Raizer</p>
+    </div>
+    <div class="flex gap-5 text-sm font-bold">
+      <a href="https://youtube.com/@elraizer" target="_blank" class="transition hover:text-[#00FF88]">YouTube</a>
+      <a href="https://tiktok.com/@elraizer" target="_blank" class="transition hover:text-[#00FF88]">TikTok</a>
+      <a href="https://kick.com/elraizer" target="_blank" class="transition hover:text-[#00FF88]">Kick</a>
+    </div>
+    <span class="flex items-center gap-2 text-xs font-bold text-[#00FF88]"><span class="h-2 w-2 rounded-full bg-[#00FF88] animate-pulse"></span> COMUNIDAD ACTIVA</span>
+  </div>
+</footer>
 
-<div class="modal" id="loginModal"><div class="modal-box">
-  <h2>Acceder</h2><p>Solo el administrador puede entrar.</p>
-  <label style="font-size:13px;font-weight:800;color:#aaa">Contraseña</label><input type="password" id="passInput" placeholder="Contraseña">
-  <button class="btn" style="width:100%;margin-top:12px" onclick="checkAdmin()">Entrar</button>
-  <button class="btn-ghost" style="width:100%;margin-top:8px" onclick="closeLogin()">Cancelar</button>
-  <div class="err" id="loginError"></div>
-</div></div>
+<!-- LOGIN MODAL - Solo dice Acceder -->
+<div id="loginModal" class="fixed inset-0 z-[100] hidden place-items-center bg-black/70 p-4 backdrop-blur-sm">
+  <div class="w-full max-w-sm rounded-[24px] border border-white/10 bg-[#101017] p-6">
+    <h2 class="font-display text-xl font-black">Acceder</h2>
+    <p class="mt-1 text-sm text-slate-400">Solo el administrador puede entrar.</p>
+    <input type="password" id="passInput" placeholder="Contraseña" class="input">
+    <button onclick="checkAdmin()" class="mt-4 w-full rounded-full bg-[#00FF88] px-6 py-3 font-display text-sm font-bold text-black">Entrar</button>
+    <button onclick="closeLogin()" class="mt-2 w-full rounded-full border border-white/15 px-6 py-3 text-sm font-bold">Cancelar</button>
+    <div id="loginError" class="mt-3 text-sm font-bold text-red-400"></div>
+  </div>
+</div>
 
-<div class="modal" id="detailModal"><div class="modal-box modal-large" id="detailBox"></div></div>
+<!-- DETAIL MODAL -->
+<div id="detailModal" class="fixed inset-0 z-[100] hidden place-items-center bg-black/80 p-4 backdrop-blur-sm overflow-y-auto">
+  <div id="detailBox" class="w-full max-w-3xl rounded-[28px] border border-white/10 bg-[#101017] p-5 sm:p-7 my-8"></div>
+</div>
 
 <script>
-let supabaseClient=null, isAdmin=false, currentFilter='Todos', allPosts=[];
+let supabaseClient=null, isAdmin=false, currentFilter='Todos', allPosts=[], allComments=[];
 function isConfigured(){return typeof SUPABASE_URL!=='undefined' && SUPABASE_URL && !SUPABASE_URL.includes('TU_') && typeof SUPABASE_ANON_KEY!=='undefined' && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes('TU_')}
 if(isConfigured()){
   supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
   loadAll();
 } else {
-  document.getElementById('grid').innerHTML='<p style="padding:20px">Configura Supabase primero: edita config.js con tu URL y clave.</p>';
+  document.getElementById('grid').innerHTML='<p class="p-5">Configura Supabase: edita config.js</p>';
+  document.getElementById('loadMsg').style.display='none';
 }
-function setFilter(f,el){currentFilter=f;document.querySelectorAll('.filter').forEach(b=>b.classList.remove('active'));el.classList.add('active');render();}
-function openLogin(){document.getElementById('loginModal').classList.add('open');}
-function closeLogin(){document.getElementById('loginModal').classList.remove('open');}
-function closeDetail(){document.getElementById('detailModal').classList.remove('open');}
+function setFilter(f,el){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>{
+    b.className='filter-btn rounded-full px-5 py-2.5 text-sm font-bold transition border border-white/10 bg-white/[.04] text-slate-300 hover:bg-white/[.08]';
+  });
+  el.className='filter-btn rounded-full px-5 py-2.5 text-sm font-bold transition bg-[#00FF88] text-black shadow-[0_8px_24px_rgba(0,255,136,.30)]';
+  render();
+}
+function openLogin(){document.getElementById('loginModal').style.display='grid';}
+function closeLogin(){document.getElementById('loginModal').style.display='none';}
+function closeDetail(){document.getElementById('detailModal').style.display='none';}
 document.getElementById('loginModal').addEventListener('click',e=>{if(e.target.id==='loginModal')closeLogin()});
 document.getElementById('detailModal').addEventListener('click',e=>{if(e.target.id==='detailModal')closeDetail()});
 
@@ -235,7 +251,7 @@ async function checkAdmin(){
   if(error){document.getElementById('loginError').textContent='Error: '+error.message; return;}
   if(data&&data.admin_password&&pass===data.admin_password){
     isAdmin=true;closeLogin();
-    document.getElementById('adminPanel').classList.add('open');
+    document.getElementById('adminPanel').classList.remove('hidden');
     document.getElementById('adminMsg').textContent='Sesión iniciada. Ya puedes publicar.';
     document.getElementById('passInput').value='';
     renderAdminList();
@@ -244,7 +260,8 @@ async function checkAdmin(){
     document.getElementById('loginError').textContent='Acceso incorrecto';
   }
 }
-function logout(){isAdmin=false;document.getElementById('adminPanel').classList.remove('open');}
+function logout(){isAdmin=false;document.getElementById('adminPanel').classList.add('hidden');}
+function clearForm(){['fTitulo','fJuego','fDescCorta','fDesc','fVideo','fDescarga','fImagen','fPasos','fReqMin','fReqRec','fTags'].forEach(id=>document.getElementById(id).value='');document.getElementById('fDescargaLabel').value='Descargar juego';}
 
 async function loadAll(){
   try{
@@ -252,118 +269,179 @@ async function loadAll(){
     let visitas=(settings?.total_visitas||0)+1;
     try{ await supabaseClient.from('app_settings').update({total_visitas:visitas}).eq('id',1); }catch(_){}
     document.getElementById('statVisitas').textContent=visitas;
-    // SIN JOIN: select('*') simple. El JOIN con comments(count) tumbaba toda la lista si faltaba la FK.
+    // SIN JOIN - select('*') simple para que no falle si falta la FK
     let {data:posts, error:errPosts}=await supabaseClient.from('posts').select('*').order('created_at',{ascending:false});
     if(errPosts){
-      console.error('POSTS ERROR:',errPosts);
-      document.getElementById('grid').innerHTML='<p style="padding:20px;color:#ff8080">No se pudieron cargar los posts: '+errPosts.message+'<br><br>En Supabase > SQL Editor ejecuta el supabase.sql de este ZIP y recarga con Ctrl+Shift+R.</p>';
+      document.getElementById('grid').innerHTML='<p class="p-5 text-red-300">No se pudieron cargar los posts: '+errPosts.message+'<br>Ejecuta supabase.sql en Supabase y recarga con Ctrl+Shift+R.</p>';
+      document.getElementById('loadMsg').style.display='none';
       return;
     }
     allPosts=posts||[];
+    let {data:comments}=await supabaseClient.from('comments').select('*').order('created_at',{ascending:false});
+    allComments=comments||[];
+    document.getElementById('loadMsg').style.display='none';
     render();
     if(isAdmin) renderAdminList();
   }catch(e){
     console.error(e);
-    document.getElementById('grid').innerHTML='<p style="padding:20px;color:#ff8080">Error de conexión: '+e.message+'</p>';
+    document.getElementById('grid').innerHTML='<p class="p-5 text-red-300">Error de conexión: '+e.message+'</p>';
+    document.getElementById('loadMsg').style.display='none';
   }
 }
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function getCover(p){return p.imagen_url || p.portada || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80';}
-function getShort(p){return p.descripcion_corta || p.descripcion || p.descripcion_corta || ''; }
-function getLong(p){return p.descripcion || p.descripcion_corta || ''; }
+function badgeClass(p){ if(p==='YouTube') return 'bg-[#FF0000] text-white shadow-[0_8px_24px_rgba(255,0,0,.35)]'; if(p==='TikTok') return 'bg-white text-black shadow-[0_8px_24px_rgba(255,255,255,.18)]'; if(p==='Kick') return 'bg-[#00FF88] text-black shadow-[0_8px_24px_rgba(0,255,136,.35)]'; return 'bg-[#A855F7] text-white'; }
+function coverGrad(p){ if(p==='YouTube') return 'cover-grad-YouTube'; if(p==='TikTok') return 'cover-grad-TikTok'; if(p==='Kick') return 'cover-grad-Kick'; return 'cover-grad-Juegos'; }
+function coverColor(p){ if(p==='Kick') return '#00FF88'; if(p==='YouTube') return '#FF4D4D'; return '#A855F7'; }
+function getCover(p){ return p.imagen_url || p.portada || ''; }
+function getShort(p){ return p.descripcion_corta || p.descripcion || ''; }
+function getLong(p){ return p.descripcion || p.descripcion_corta || ''; }
+function commentsFor(id){ return allComments.filter(c=>String(c.post_id)===String(id)); }
 
 function render(){
   let list=allPosts.filter(p=> currentFilter==='Todos' || p.plataforma===currentFilter || (currentFilter==='Juegos' && (p.categoria==='Juego' || p.plataforma==='Juegos')) );
   document.getElementById('statPosts').textContent=allPosts.length;
   document.getElementById('statLikes').textContent=allPosts.reduce((s,p)=>s+(p.likes||0),0);
-  document.getElementById('empty').style.display=list.length?'none':'block';
-  document.getElementById('grid').innerHTML=list.map(p=>`
-  <article class="card">
-    <img src="${esc(getCover(p))}" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80'" onclick="openDetail('${p.id}')" style="cursor:pointer">
-    <div class="card-body">
-      <span class="badge ${esc(p.plataforma||'YouTube')}">${esc(p.plataforma||'YouTube')}</span>
-      <div class="game">🎮 ${esc(p.juego||'')} ${p.categoria? ' • '+esc(p.categoria):''}</div>
-      <h3>${esc(p.titulo||'')}</h3>
-      <p>${esc(getShort(p))}</p>
-      <div class="meta">👁️ ${p.visitas||0} visitas &nbsp; • &nbsp; ${new Date(p.created_at).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}</div>
-      <div class="card-actions">
-        <button class="small primary" onclick="likePost('${p.id}',${p.likes||0})">❤️ ${p.likes||0} Me gusta</button>
-        <button class="small" onclick="toggleComments('${p.id}')">💬 Comentarios</button>
-        <button class="small" onclick="openDetail('${p.id}')">Ver más →</button>
-        ${p.video_url?`<a class="small" href="${esc(p.video_url)}" target="_blank">▶️ Ver video</a>`:''}
-        ${p.descarga_url?`<a class="small" href="${esc(p.descarga_url)}" target="_blank">⬇️ ${esc(p.descarga_label||'Descargar')}</a>`:''}
+  document.getElementById('empty').classList.toggle('hidden', list.length>0);
+  document.getElementById('grid').innerHTML=list.map(p=>{
+    let cover=getCover(p);
+    let coverHtml = cover
+      ? `<img src="${esc(cover)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.05]">`
+      : '';
+    let gradHtml = `<div class="relative flex h-full w-full items-center justify-center overflow-hidden ${coverGrad(p.plataforma)} ${cover?'hidden':''}" style="display:${cover?'none':'flex'}">
+      <div class="absolute inset-0 opacity-40" style="background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:28px 28px"></div>
+      <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full blur-2xl" style="background:${coverColor(p.plataforma)};opacity:.35"></div>
+      <div class="absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-[#A855F7] opacity-25 blur-2xl"></div>
+      <div class="relative flex flex-col items-center px-4 text-center">
+        <span class="grid h-16 w-16 place-items-center rounded-[20px] border border-white/20 bg-black/40 font-display text-3xl font-black shadow-2xl backdrop-blur sm:h-20 sm:w-20 sm:text-4xl" style="color:${coverColor(p.plataforma)}">${esc((p.juego||'A').trim().slice(0,1).toUpperCase())}</span>
+        <span class="mt-3 font-display font-bold uppercase tracking-[.22em] text-white/90 text-[11px] sm:text-xs">${esc(p.juego||'')}</span>
+        <span class="mt-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/50">🎮 ${esc(p.plataforma||'')}</span>
       </div>
-      <div class="comments" id="c-${p.id}"><div id="list-${p.id}"></div><input id="n-${p.id}" placeholder="Tu nombre (opcional)"><textarea id="t-${p.id}" rows="2" placeholder="Escribe tu comentario..."></textarea><button class="small primary" onclick="sendComment('${p.id}')">Publicar comentario</button></div>
-    </div>
-  </article>`).join('');
+    </div>`;
+    return `
+    <article class="group overflow-hidden rounded-[24px] border border-white/10 bg-[#101017] transition hover:border-[#00FF88]/30 hover:shadow-[0_20px_50px_rgba(0,0,0,.45)]">
+      <button onclick="openDetail('${p.id}')" class="block w-full text-left">
+        <div class="relative aspect-[16/9] overflow-hidden">
+          <div class="h-full w-full transition duration-500 group-hover:scale-[1.05]">
+            ${coverHtml}${gradHtml}
+          </div>
+          <span class="absolute left-4 top-4 rounded-full px-3 py-1.5 text-[11px] font-black ${badgeClass(p.plataforma)}">${esc(p.plataforma||'YouTube')}</span>
+          <span class="absolute right-4 top-4 rounded-full border border-white/20 bg-black/60 px-3 py-1.5 text-[11px] font-bold backdrop-blur">${esc(p.categoria||'Juego')}</span>
+        </div>
+        <div class="p-5 sm:p-6">
+          <p class="text-sm font-bold text-[#00FF88]">${esc(p.juego||'')}</p>
+          <h3 class="mt-2 min-h-[54px] font-display text-[18px] font-bold leading-snug">${esc(p.titulo||'')}</h3>
+          <p class="line-clamp-2 mt-2.5 text-[15px] leading-relaxed text-slate-400">${esc(getShort(p))}</p>
+          <div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/[.07] pt-4 text-[13px] text-slate-400">
+            <span class="flex items-center gap-1.5">👁️ ${p.visitas||0}</span>
+            <span class="flex items-center gap-1.5">❤️ ${p.likes||0}</span>
+            <span class="flex items-center gap-1.5">💬 ${commentsFor(p.id).length}</span>
+            <span class="ml-auto flex items-center gap-1.5">📅 ${new Date(p.created_at).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}</span>
+          </div>
+        </div>
+      </button>
+      <div class="flex flex-wrap gap-2.5 px-5 pb-5 sm:px-6 sm:pb-6">
+        <button onclick="likePost('${p.id}',${p.likes||0})" class="flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold transition ${localStorage.getItem('liked_'+p.id)?'bg-red-500 text-white':'border border-white/15 hover:bg-white/5'}">❤️ Me gusta</button>
+        <button onclick="toggleComments('${p.id}')" class="rounded-full border border-white/15 px-4 py-2.5 text-sm font-bold hover:bg-white/5">💬 Comentarios</button>
+        <button onclick="openDetail('${p.id}')" class="rounded-full border border-white/15 px-4 py-2.5 text-sm font-bold hover:bg-white/5">Ver más →</button>
+      </div>
+      <div id="c-${p.id}" class="hidden border-t border-white/10 bg-black/25 p-5">
+        <p class="font-display text-sm font-bold tracking-wide">Comentarios (${commentsFor(p.id).length}) <span class="ml-1 font-sans text-xs font-medium text-slate-400">· Sin registro</span></p>
+        <div class="mt-4 grid gap-2.5 sm:grid-cols-[160px_1fr_auto]">
+          <input id="n-${p.id}" placeholder="Nombre (opcional)" class="rounded-2xl border border-white/10 bg-[#08080D] px-4 py-3 text-[15px]">
+          <input id="t-${p.id}" placeholder="Escribe tu comentario…" class="rounded-2xl border border-white/10 bg-[#08080D] px-4 py-3 text-[15px]">
+          <button onclick="sendComment('${p.id}')" class="rounded-2xl bg-[#A855F7] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#9333EA]">Publicar</button>
+        </div>
+        <div id="list-${p.id}" class="mt-4 space-y-3"></div>
+      </div>
+    </article>`;
+  }).join('');
 }
 
 function openDetail(id){
   let p=allPosts.find(x=>String(x.id)===String(id));
   if(!p) return;
-  // Contar visita
   supabaseClient.from('posts').update({visitas:(p.visitas||0)+1}).eq('id',p.id).then(()=>{ p.visitas=(p.visitas||0)+1; render(); });
   let pasos=(p.pasos||'').split('\n').filter(s=>s.trim());
   let tags=(p.tags||'').split(',').filter(s=>s.trim());
+  let cover=getCover(p);
+  let coverHtml = cover ? `<img src="${esc(cover)}" class="mt-4 w-full h-[280px] object-cover rounded-[20px]">` : '';
   document.getElementById('detailBox').innerHTML=`
-    <div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><h2 style="font-family:Orbitron;line-height:1.2">${esc(p.titulo)}</h2><button class="btn-ghost" onclick="closeDetail()">✕</button></div>
-    <div style="margin:8px 0;display:flex;gap:8px;flex-wrap:wrap"><span class="badge ${esc(p.plataforma||'YouTube')}">${esc(p.plataforma||'YouTube')}</span><span style="background:#1a1a22;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700">🎮 ${esc(p.juego||'')}</span>${p.categoria?`<span style="background:#1a1a22;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700">${esc(p.categoria)}</span>`:''}</div>
-    <img class="detail-cover" src="${esc(getCover(p))}" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80'">
-    <p style="margin-top:14px;line-height:1.7;color:#ddd;white-space:pre-wrap">${esc(getLong(p))}</p>
-    ${pasos.length?`<div class="detail-steps"><b>📋 Pasos para instalar</b><ol>${pasos.map(s=>`<li>${esc(s)}</li>`).join('')}</ol></div>`:''}
-    ${(p.requisitos_min||p.requisitos_rec)?`<div class="req-grid"><div class="req-box"><b>✅ Mínimos</b><br>${esc(p.requisitos_min||'No especificado')}</div><div class="req-box"><b>🚀 Recomendados</b><br>${esc(p.requisitos_rec||'No especificado')}</div></div>`:''}
-    ${tags.length?`<div style="margin-top:12px;color:#888;font-size:13px">Tags: ${tags.map(t=>`#${esc(t.trim())}`).join(' ')}</div>`:''}
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
-      ${p.video_url?`<a class="btn" href="${esc(p.video_url)}" target="_blank">▶️ Ver video</a>`:''}
-      ${p.descarga_url?`<a class="btn" href="${esc(p.descarga_url)}" target="_blank">⬇️ ${esc(p.descarga_label||'Descargar')}</a>`:''}
-      <button class="small primary" onclick="likePost('${p.id}',${p.likes||0})">❤️ ${p.likes||0} Me gusta</button>
+    <div class="flex justify-between items-start gap-3">
+      <div><span class="inline-block rounded-full px-3 py-1.5 text-[11px] font-black ${badgeClass(p.plataforma)}">${esc(p.plataforma)}</span>
+      <h2 class="mt-3 font-display text-2xl font-black leading-tight">${esc(p.titulo)}</h2>
+      <p class="mt-2 text-sm font-bold text-[#00FF88]">${esc(p.juego||'')} • ${new Date(p.created_at).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}</p></div>
+      <button onclick="closeDetail()" class="rounded-full border border-white/15 px-4 py-2 font-bold">✕</button>
     </div>
-    <div class="comments open" style="display:block;margin-top:16px"><h4>💬 Comentarios</h4><div id="list-detail-${p.id}"></div><input id="n-detail-${p.id}" placeholder="Tu nombre (opcional)"><textarea id="t-detail-${p.id}" rows="2" placeholder="Escribe tu comentario..."></textarea><button class="small primary" onclick="sendCommentDetail('${p.id}')">Publicar comentario</button></div>
+    ${coverHtml}
+    <p class="mt-4 leading-relaxed text-slate-300" style="white-space:pre-wrap">${esc(getLong(p))}</p>
+    ${p.video_url?`<div class="mt-8 rounded-[20px] border border-white/10 bg-black/25 p-5"><h3 class="font-display font-bold">▶️ Video</h3><a href="${esc(p.video_url)}" target="_blank" class="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-[#00FF88] px-5 py-3.5 text-sm font-bold text-black transition hover:brightness-110">Ver video en ${esc(p.plataforma)} <span>↗</span></a></div>`:''}
+    ${pasos.length?`<div class="mt-8"><h3 class="font-display text-lg font-bold">Cómo instalar paso a paso</h3><ol class="mt-4 space-y-3">${pasos.map((s,i)=>`<li class="flex gap-3.5 rounded-2xl border border-white/10 bg-white/[.03] p-4"><span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#00FF88] font-display font-black text-black">${i+1}</span><span class="pt-1 text-[15px] leading-relaxed text-slate-200">${esc(s)}</span></li>`).join('')}</ol></div>`:''}
+    ${(p.requisitos_min||p.requisitos_rec)?`<div class="mt-8 grid gap-3 sm:grid-cols-2"><div class="rounded-2xl border border-white/10 bg-black/25 p-5"><b>✅ Mínimos</b><p class="mt-2 text-sm text-slate-300">${esc(p.requisitos_min||'No especificado')}</p></div><div class="rounded-2xl border border-white/10 bg-black/25 p-5"><b>🚀 Recomendados</b><p class="mt-2 text-sm text-slate-300">${esc(p.requisitos_rec||'No especificado')}</p></div></div>`:''}
+    <div class="mt-8"><h3 class="font-display text-lg font-bold">Enlaces de descarga</h3><div class="mt-4 grid gap-3 sm:grid-cols-2">
+      ${p.descarga_url?`<a href="${esc(p.descarga_url)}" target="_blank" class="flex items-center justify-center gap-2 rounded-full bg-[#00FF88] px-4 py-3 text-sm font-bold text-black transition hover:brightness-110">⬇️ ${esc(p.descarga_label||'Descargar')}</a>`:`<p class="text-sm text-slate-500">Este post todavía no tiene enlace de descarga.</p>`}
+    </div></div>
+    ${tags.length?`<div class="mt-6 text-sm text-slate-400">Tags: ${tags.map(t=>`#${esc(t.trim())}`).join(' ')}</div>`:''}
+    <div class="mt-8 flex flex-wrap items-center gap-3 border-y border-white/10 py-6">
+      <button onclick="likePost('${p.id}',${p.likes||0})" class="flex items-center gap-2 rounded-full px-5 py-3 font-bold transition ${localStorage.getItem('liked_'+p.id)?'bg-red-500 text-white':'bg-red-500/15 text-red-300 hover:bg-red-500/25'}">❤️ Me gusta • ${p.likes||0}</button>
+      <span class="flex items-center gap-2 text-sm text-slate-400">👁️ ${p.visitas||0} visitas</span>
+      <span class="flex items-center gap-2 text-sm text-slate-400">💬 ${commentsFor(p.id).length} comentarios</span>
+    </div>
+    <div class="mt-7"><h3 class="font-display text-lg font-bold">Comentarios (${commentsFor(p.id).length})</h3>
+      <div class="mt-4 grid gap-2.5 sm:grid-cols-[160px_1fr_auto]">
+        <input id="n-detail-${p.id}" placeholder="Nombre (opcional)" class="rounded-2xl border border-white/10 bg-black/30 px-4 py-3">
+        <input id="t-detail-${p.id}" placeholder="Escribe tu comentario…" class="rounded-2xl border border-white/10 bg-black/30 px-4 py-3">
+        <button onclick="sendCommentDetail('${p.id}')" class="rounded-2xl bg-[#A855F7] px-6 py-3 text-sm font-bold text-white">Publicar</button>
+      </div>
+      <div id="list-detail-${p.id}" class="mt-4 space-y-3"></div>
+    </div>
   `;
-  document.getElementById('detailModal').classList.add('open');
+  document.getElementById('detailModal').style.display='grid';
   loadCommentsDetail(p.id);
 }
 
 async function loadCommentsDetail(post_id){
   let {data}=await supabaseClient.from('comments').select('*').eq('post_id',post_id).order('created_at',{ascending:false});
   let el=document.getElementById('list-detail-'+post_id);
-  if(el) el.innerHTML=(data||[]).map(c=>`<div class="comment"><b>${esc(c.nombre||'Anónimo')}</b><br>${esc(c.texto)}</div>`).join('')||'<p style="color:#888;font-size:13px">Sé el primero en comentar.</p>';
+  if(el) el.innerHTML=(data||[]).map(c=>`<div class="rounded-2xl border border-white/10 bg-black/25 p-4"><b class="text-sm">${esc(c.nombre||'Anónimo')}</b><p class="mt-1 text-sm text-slate-300">${esc(c.texto)}</p></div>`).join('')||'<p class="text-sm text-slate-500">Sé el primero en comentar.</p>';
 }
 async function sendCommentDetail(post_id){
   let nombre=document.getElementById('n-detail-'+post_id).value||'Anónimo';
   let texto=document.getElementById('t-detail-'+post_id).value.trim();
-  if(!texto) return alert('Escribe un comentario');
+  if(!texto) return alert('Escribe un comentario antes de publicar.');
   let {error}=await supabaseClient.from('comments').insert([{post_id,nombre,texto}]);
   if(error) return alert('No se pudo comentar: '+error.message);
   document.getElementById('t-detail-'+post_id).value='';
-  loadCommentsDetail(post_id);
+  let {data}=await supabaseClient.from('comments').select('*').order('created_at',{ascending:false});
+  allComments=data||[];
+  loadCommentsDetail(post_id); render();
 }
 
 async function likePost(id,current){
-  let key='liked_'+id;
-  if(localStorage.getItem(key)){alert('Ya le diste like a este post');return;}
+  if(localStorage.getItem('liked_'+id)){alert('Ya le diste like a este post.');return;}
   let {error}=await supabaseClient.from('posts').update({likes:current+1}).eq('id',id);
-  if(error) return alert('No se pudo dar like: '+error.message);
-  localStorage.setItem(key,'1');
+  if(error) return alert('No se pudo guardar el like: '+error.message);
+  localStorage.setItem('liked_'+id,'1');
   loadAll();
 }
 async function toggleComments(id){
   let el=document.getElementById('c-'+id);
-  el.classList.toggle('open');
-  if(el.classList.contains('open')){
+  el.classList.toggle('hidden');
+  if(!el.classList.contains('hidden')){
     let {data}=await supabaseClient.from('comments').select('*').eq('post_id',id).order('created_at',{ascending:false});
-    document.getElementById('list-'+id).innerHTML=(data||[]).map(c=>`<div class="comment"><b>${esc(c.nombre||'Anónimo')}</b><br>${esc(c.texto)}</div>`).join('')||'<p style="color:#888;font-size:13px">Sé el primero en comentar.</p>';
+    document.getElementById('list-'+id).innerHTML=(data||[]).map(c=>`<div class="rounded-2xl border border-white/10 bg-black/25 p-4"><b class="text-sm">${esc(c.nombre||'Anónimo')}</b><p class="mt-1 text-sm text-slate-300">${esc(c.texto)}</p></div>`).join('')||'<p class="text-sm text-slate-500">Sé el primero en comentar.</p>';
   }
 }
 async function sendComment(post_id){
   let nombre=document.getElementById('n-'+post_id).value||'Anónimo';
   let texto=document.getElementById('t-'+post_id).value.trim();
-  if(!texto) return alert('Escribe un comentario');
+  if(!texto) return alert('Escribe un comentario antes de publicar.');
   let {error}=await supabaseClient.from('comments').insert([{post_id,nombre,texto}]);
   if(error) return alert('No se pudo comentar: '+error.message);
   document.getElementById('t-'+post_id).value='';
-  toggleComments(post_id); toggleComments(post_id);
+  let {data}=await supabaseClient.from('comments').select('*').order('created_at',{ascending:false});
+  allComments=data||[];
+  render(); toggleComments(post_id); toggleComments(post_id);
 }
 
 async function savePost(){
@@ -388,24 +466,22 @@ async function savePost(){
   };
   let {data,error}=await supabaseClient.from('posts').insert([payload]).select();
   if(error){
-    alert('No se pudo guardar: '+error.message+' (code '+(error.code||'')+') — Ejecuta supabase.sql en Supabase para agregar las columnas que faltan.');
+    alert('No se pudo guardar: '+error.message+' — Ejecuta supabase.sql en Supabase.');
     document.getElementById('adminMsg').textContent='❌ '+error.message;
     return;
   }
   document.getElementById('adminMsg').textContent='✅ Post guardado';
-  ['fTitulo','fJuego','fDescCorta','fDesc','fVideo','fDescarga','fImagen','fPasos','fReqMin','fReqRec','fTags'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('fDescargaLabel').value='Descargar juego';
-  loadAll(); renderAdminList();
+  clearForm();
+  loadAll();
 }
-
 function renderAdminList(){
-  document.getElementById('adminList').innerHTML=allPosts.map(p=>`<div class="post-item"><span>🎮 <b>${esc(p.titulo)}</b> • ${esc(p.plataforma)} • ❤️ ${p.likes||0}</span><div style="display:flex;gap:6px"><button class="small" onclick="openDetail('${p.id}')">Ver</button><button class="small danger" onclick="deletePost('${p.id}')">Eliminar</button></div></div>`).join('')||'Sin posts';
+  document.getElementById('adminList').innerHTML=allPosts.map(p=>`<div class="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5"><span class="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold">${esc(p.categoria||'Juego')}</span><span class="min-w-0 flex-1 truncate text-sm font-bold">${esc(p.titulo)}</span><button onclick="openDetail('${p.id}')" class="text-sm font-bold text-[#00FF88]">Ver</button><button onclick="deletePost('${p.id}')" class="text-xs font-bold text-red-300">Eliminar</button></div>`).join('')||'Sin posts';
 }
 async function deletePost(id){
   if(!confirm('¿Eliminar este post?')) return;
   let {error}=await supabaseClient.from('posts').delete().eq('id',id);
   if(error) return alert('No se pudo eliminar: '+error.message);
-  loadAll(); renderAdminList();
+  loadAll();
 }
 </script>
 </body>

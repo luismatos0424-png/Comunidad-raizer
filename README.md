@@ -1,46 +1,23 @@
-# Elraizercommunity - ZIP COMPLETO para GitHub + Vercel
-Diseño IGUAL a Elraizercommunity: hero grande, stats, filtros, tarjetas con badge, sidebar con anuncios, panel admin completo.
+# Elraizercommunity - MISMO DISEÑO que la vista previa "Bienvenidos a mi comunidad"
 
-## Qué trae
-- index.html = Diseño Elraizercommunity completo + Supabase (SIN JOIN que tumbaba los posts)
-- config.js = Ya con tu URL y tu llave publishable, con window.
-- supabase.sql = Esquema completo, NO borra tus posts
-- README.md = Esta guía
+Este ZIP es la copia exacta del diseño que te gusta:
+- Header con R verde + ELRAIZER COMMUNITY + COMUNIDAD RAIZER + botón Acceder
+- Hero: "Bienvenidos a mi comunidad" con "comunidad" en degradado verde -> morado
+- Stats en tarjetas glass: Posts / Likes / Visitas + "En la comunidad"
+- Banner: "Hoy en la comunidad: Minecraft, GTA V y Valorant..."
+- Publicidad 728x90 + sidebar 300x250
+- Sección "Últimos posts" + filtros Todos / YouTube / TikTok / Kick / Juegos
+- Tarjetas: portada con letra del juego + degradado por plataforma, badge de plataforma, categoría, juego, título, descripción, 👁️ visitas ❤️ likes 💬 comentarios + fecha
+- Al abrir un post: Video, Cómo instalar paso a paso con números verdes, Enlaces de descarga, Requisitos, Comentarios sin registro (botón morado Publicar)
+- Panel admin: rounded-[28px] verde, mismo formulario
+- Sidebar Sígueme con botones YouTube rojo / TikTok blanco / Kick verde + "Solo enlaces oficiales. No alojamos archivos pesados."
 
-## Paso 1 - Supabase (OBLIGATORIO, 1 minuto)
-1. Entra a Supabase > tu proyecto elraizercommunity > SQL Editor > New Query
-2. Pega TODO el archivo supabase.sql de este ZIP > Run (debe decir Success)
-3. Ve a Table Editor > app_settings > id=1 > en admin_password pon tu contraseña > Save
-   Si no hay fila id=1, créala: id=1, admin_password=tu contraseña, total_visitas=0
+## Pasos
+1. Supabase > SQL Editor > pega TODO supabase.sql > Run
+2. Table Editor > app_settings > id=1 > admin_password = tu contraseña > Save
+3. GitHub repo Comunidad-raizer > reemplaza index.html, config.js, supabase.sql por los de este ZIP > Commit
+4. Vercel redepliega solo > abre con Ctrl+Shift+R
 
-## Paso 2 - GitHub
-1. Entra a tu repo Comunidad-raizer
-2. Borra / reemplaza estos 3 archivos por los de este ZIP:
-   - index.html (reemplazar)
-   - config.js (reemplazar)
-   - supabase.sql (reemplazar)
-3. Commit changes
-
-## Paso 3 - Vercel
-- Vercel redepliega solo en 1-2 min.
-- Abre https://comunidadraizer.vercel.app/ con Ctrl + Shift + R (recarga fuerte)
-- Debe mostrar los posts. Si está vacío, es que de verdad no hay posts: entra con Acceder y crea el primero.
-
-## Cómo publicar un post
-Acceder (solo tú) > Panel Admin:
-- Título * , Juego, Plataforma (YouTube/TikTok/Kick/Juegos), Categoría
-- Descripción corta (tarjeta) + Descripción larga (al abrir el post)
-- Link de imagen (portada, pega el link, no subas archivos pesados)
-- Link del video + Link de descarga + Texto del botón
-- Pasos (uno por línea), Requisitos mínimos / recomendados, Tags
-- Guardar post -> aparece arriba de inmediato.
-
-## Cómo funciona para visitantes
-- Sin registro: pueden dar like (1 por navegador), comentar anónimo o con nombre, ver visitas.
-- Likes y visitas se guardan en Supabase.
-- Los anuncios son espacios 728x90 + 300x250 + 300x600 para AdSense.
-
-## Si algo falla
-- "No se pudieron cargar los posts: ..." -> Copia el mensaje tal cual. Casi siempre es que falta correr supabase.sql.
-- "Acceso incorrecto" -> La contraseña en Supabase app_settings id=1 no coincide. Cámbiala ahí, no en GitHub.
-- No subas tu service_role key a GitHub. Solo la publishable que ya está en config.js.
+## Diferencia con el ZIP anterior
+El ZIP anterior tenía hero "EL RAIZER COMMUNITY" gigante. Este tiene el hero correcto "Bienvenidos a mi comunidad".
+Si al abrirlo sigues viendo el viejo, es caché: haz Ctrl+Shift+R o abre en incógnito.
