@@ -90,6 +90,16 @@ select.input option{background:#101017}
     </div>
   </section>
 
+    <!-- DIAGNÓSTICO - Solo aparece si hay problema con los posts -->
+  <div id="debugBox" class="mt-6 hidden rounded-3xl border border-yellow-400/40 bg-yellow-400/10 p-5">
+    <h3 class="font-display font-bold text-yellow-300">⚠️ Diagnóstico - Posts no visibles</h3>
+    <p id="debugText" class="mt-2 text-[15px] leading-relaxed text-slate-200"></p>
+    <div class="mt-3 flex flex-wrap gap-2">
+      <button onclick="runDiagnostico()" class="rounded-full bg-yellow-400 px-5 py-2.5 text-sm font-bold text-black">🔍 Volver a diagnosticar</button>
+      <button onclick="document.getElementById('debugBox').classList.add('hidden')" class="rounded-full border border-white/20 px-5 py-2.5 text-sm font-bold">Ocultar</button>
+    </div>
+  </div>
+
   <!-- PANEL ADMIN - IGUAL: rounded-[28px] verde -->
   <section id="adminPanel" class="mt-8 hidden rounded-[28px] border border-[#00FF88]/20 bg-gradient-to-b from-[#10161A] to-[#0D0D14] p-5 shadow-2xl sm:p-7">
     <div class="flex flex-wrap items-center justify-between gap-3">
@@ -265,29 +275,56 @@ function clearForm(){['fTitulo','fJuego','fDescCorta','fDesc','fVideo','fDescarg
 
 async function loadAll(){
   try{
-    let {data:settings}=await supabaseClient.from('app_settings').select('*').eq('id',1).single();
+    // Diagnóstico: mostrar qué está pasando
+    let debugEl = document.getElementById('debugBox');
+    let debugText = document.getElementById('debugText');
+    let {data:settings, error:errSettings} = await supabaseClient.from('app_settings').select('*').eq('id',1).single();
     let visitas=(settings?.total_visitas||0)+1;
-    try{ await supabaseClient.from('app_settings').update({total_visitas:visitas}).eq('id',1); }catch(_){}
-    document.getElementById('statVisitas').textContent=visitas;
-    // SIN JOIN - select('*') simple para que no falle si falta la FK
+    if(!errSettings){
+      try{ await supabaseClient.from('app_settings').update({total_visitas:visitas}).eq('id',1); }catch(_){}
+      document.getElementById('statVisitas').textContent=visitas;
+    } else {
+      console.warn('app_settings error:', errSettings);
+    }
+    // SIN JOIN - select('*') simple
     let {data:posts, error:errPosts}=await supabaseClient.from('posts').select('*').order('created_at',{ascending:false});
+    console.log('POSTS:', posts, 'ERROR:', errPosts);
     if(errPosts){
-      document.getElementById('grid').innerHTML='<p class="p-5 text-red-300">No se pudieron cargar los posts: '+errPosts.message+'<br>Ejecuta supabase.sql en Supabase y recarga con Ctrl+Shift+R.</p>';
+      document.getElementById('grid').innerHTML='<p class="p-5 text-red-300">No se pudieron cargar los posts: '+errPosts.message+'<br>Ejecuta supabase-FIX.sql en Supabase y recarga con Ctrl+Shift+R.</p>';
       document.getElementById('loadMsg').style.display='none';
+      debugEl.classList.remove('hidden');
+      debugText.innerHTML = '<b>Error al leer posts:</b> '+errPosts.message+' (code '+ (errPosts.code||'') +')<br><br>Esto pasa cuando falta una columna o la tabla no existe. <b>Solución:</b> Ve a Supabase > SQL Editor > pega TODO el archivo <b>supabase.sql</b> de este ZIP > Run > Recarga con Ctrl+Shift+R.';
       return;
     }
     allPosts=posts||[];
-    let {data:comments}=await supabaseClient.from('comments').select('*').order('created_at',{ascending:false});
+    let {data:comments, error:errComments}=await supabaseClient.from('comments').select('*').order('created_at',{ascending:false});
+    if(errComments) console.warn('comments error:', errComments);
     allComments=comments||[];
     document.getElementById('loadMsg').style.display='none';
+    // Si no hay posts, mostrar diagnóstico claro en vez de dejarlo en blanco
+    if(allPosts.length===0){
+      debugEl.classList.remove('hidden');
+      debugText.innerHTML = 'Supabase respondió bien, pero devolvió <b>0 posts</b>. Eso significa una de estas 2 cosas:<br><br>'
+        + '<b>1) La tabla posts está vacía de verdad:</b> nunca se guardó ningún post porque el botón Guardar falló por falta de columnas.<br>'
+        + '<b>2) RLS está bloqueando la lectura:</b> cuando RLS está activado sin política, Supabase devuelve 0 filas SIN error. Es el bug que vuelve cada vez.<br><br>'
+        + '<b>Solución en 1 minuto:</b> Supabase > SQL Editor > pega TODO el archivo <b>supabase.sql</b> de este ZIP (este archivo desactiva RLS para posts/comments y agrega las columnas que faltan) > Run > Vuelve aquí y pulsa <b>Volver a diagnosticar</b> o recarga con Ctrl+Shift+R.<br><br>'
+        + 'Para comprobar si hay posts de verdad, en SQL Editor corre: <code style="background:#000;padding:2px 6px;border-radius:6px">select count(*) from posts;</code> Si dice 0, no hay posts guardados. Si dice 3 pero aquí sale 0, es RLS.';
+    } else {
+      debugEl.classList.add('hidden');
+    }
     render();
     if(isAdmin) renderAdminList();
   }catch(e){
     console.error(e);
     document.getElementById('grid').innerHTML='<p class="p-5 text-red-300">Error de conexión: '+e.message+'</p>';
     document.getElementById('loadMsg').style.display='none';
+    let debugEl=document.getElementById('debugBox');
+    let debugText=document.getElementById('debugText');
+    debugEl.classList.remove('hidden');
+    debugText.innerHTML='Error de conexión: '+e.message+'<br>Revisa que config.js tenga tu URL y llave y que Vercel haya redeplegado.';
   }
 }
+async function runDiagnostico(){ document.getElementById('loadMsg').style.display='block'; document.getElementById('loadMsg').textContent='Diagnosticando...'; await loadAll(); }
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function badgeClass(p){ if(p==='YouTube') return 'bg-[#FF0000] text-white shadow-[0_8px_24px_rgba(255,0,0,.35)]'; if(p==='TikTok') return 'bg-white text-black shadow-[0_8px_24px_rgba(255,255,255,.18)]'; if(p==='Kick') return 'bg-[#00FF88] text-black shadow-[0_8px_24px_rgba(0,255,136,.35)]'; return 'bg-[#A855F7] text-white'; }
@@ -466,13 +503,15 @@ async function savePost(){
   };
   let {data,error}=await supabaseClient.from('posts').insert([payload]).select();
   if(error){
-    alert('No se pudo guardar: '+error.message+' — Ejecuta supabase.sql en Supabase.');
-    document.getElementById('adminMsg').textContent='❌ '+error.message;
+    alert('NO se guardó. Error: '+error.message+' (code '+(error.code||'')+')\n\nEsto es porque falta una columna en Supabase. Corre supabase.sql en SQL Editor y vuelve a intentar.');
+    document.getElementById('adminMsg').textContent='❌ NO se guardó: '+error.message+' - Corre supabase.sql';
+    document.getElementById('adminMsg').style.color='#FF8080';
     return;
   }
-  document.getElementById('adminMsg').textContent='✅ Post guardado';
+  document.getElementById('adminMsg').textContent='✅ Post guardado - ya debe aparecer abajo. Si no aparece, pulsa Volver a diagnosticar.';
+  document.getElementById('adminMsg').style.color='#00FF88';
   clearForm();
-  loadAll();
+  await loadAll();
 }
 function renderAdminList(){
   document.getElementById('adminList').innerHTML=allPosts.map(p=>`<div class="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5"><span class="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold">${esc(p.categoria||'Juego')}</span><span class="min-w-0 flex-1 truncate text-sm font-bold">${esc(p.titulo)}</span><button onclick="openDetail('${p.id}')" class="text-sm font-bold text-[#00FF88]">Ver</button><button onclick="deletePost('${p.id}')" class="text-xs font-bold text-red-300">Eliminar</button></div>`).join('')||'Sin posts';
