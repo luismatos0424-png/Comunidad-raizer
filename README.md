@@ -1,41 +1,46 @@
-# Elraizercommunity - CORREGIDO
+# Elraizercommunity - ZIP COMPLETO para GitHub + Vercel
+Diseño IGUAL a Elraizercommunity: hero grande, stats, filtros, tarjetas con badge, sidebar con anuncios, panel admin completo.
 
-## Que estaba mal en tus archivos (ya corregido en este ZIP)
+## Qué trae
+- index.html = Diseño Elraizercommunity completo + Supabase (SIN JOIN que tumbaba los posts)
+- config.js = Ya con tu URL y tu llave publishable, con window.
+- supabase.sql = Esquema completo, NO borra tus posts
+- README.md = Esta guía
 
-1. **config.js usaba `const` pero index.html leia `window.SUPABASE_URL`**
-   En el navegador, `const` NO crea `window.SUPABASE_URL`, por eso `init()` pensaba que no habia configuracion y fallaba.
-   CORREGIDO: ahora config.js usa `window.SUPABASE_URL = ...` y tambien `var`, y index.html lee ambas formas.
+## Paso 1 - Supabase (OBLIGATORIO, 1 minuto)
+1. Entra a Supabase > tu proyecto elraizercommunity > SQL Editor > New Query
+2. Pega TODO el archivo supabase.sql de este ZIP > Run (debe decir Success)
+3. Ve a Table Editor > app_settings > id=1 > en admin_password pon tu contraseña > Save
+   Si no hay fila id=1, créala: id=1, admin_password=tu contraseña, total_visitas=0
 
-2. **supabase.sql tenia columnas en ESPAÑOL pero index.html pedia columnas en INGLES**
-   - SQL tenia: titulo, juego, portada, descripcion_corta, enlaces, pasos, visitas, nombre, texto, ad_top, total_visitas...
-   - index.html pedia: title, game, cover, short_desc, downloads, steps, views, name, text, socials, ads, total_visits...
-   Por eso Supabase respondia "column does not exist" y salia "No se pudo guardar el post" / "No se pudo conectar".
-   CORREGIDO: supabase.sql ahora crea todo en INGLES, igual que index.html.
+## Paso 2 - GitHub
+1. Entra a tu repo Comunidad-raizer
+2. Borra / reemplaza estos 3 archivos por los de este ZIP:
+   - index.html (reemplazar)
+   - config.js (reemplazar)
+   - supabase.sql (reemplazar)
+3. Commit changes
 
-## Que hay en este ZIP
-- `index.html` = tu web con el parche de lectura de config.js
-- `config.js` = MISMO URL y MISMA llave que ya tenias, pero ahora con `window.` para que si funcione
-- `supabase.sql` = tablas CORREGIDAS en ingles + politicas RLS + 3 posts de ejemplo
-- `README.md` = esta guia
+## Paso 3 - Vercel
+- Vercel redepliega solo en 1-2 min.
+- Abre https://comunidadraizer.vercel.app/ con Ctrl + Shift + R (recarga fuerte)
+- Debe mostrar los posts. Si está vacío, es que de verdad no hay posts: entra con Acceder y crea el primero.
 
-## Pasos (en este orden, importante)
+## Cómo publicar un post
+Acceder (solo tú) > Panel Admin:
+- Título * , Juego, Plataforma (YouTube/TikTok/Kick/Juegos), Categoría
+- Descripción corta (tarjeta) + Descripción larga (al abrir el post)
+- Link de imagen (portada, pega el link, no subas archivos pesados)
+- Link del video + Link de descarga + Texto del botón
+- Pasos (uno por línea), Requisitos mínimos / recomendados, Tags
+- Guardar post -> aparece arriba de inmediato.
 
-1. En Supabase > SQL Editor > New Query > pega TODO `supabase.sql` de este ZIP > Run.
-   Debe decir Success. Esto BORRA las tablas viejas en español y las crea bien en ingles.
-   Si ya tenias posts importantes que quieres conservar, NO lo ejecutes y avisame para hacerte migracion.
-
-2. En Supabase > Table Editor > app_settings > id=1 > pon tu contraseña en `admin_password` > Save.
-   No la pongas en GitHub.
-
-3. En GitHub, reemplaza los 3 archivos: `index.html`, `config.js`, `supabase.sql` por los de este ZIP.
-   Haz Commit.
-
-4. Espera que Vercel redepliegue solo. Abre tu web con Ctrl + Shift + R.
-
-5. Prueba: Acceder con tu contraseña > Crear post > Guardar. Ya debe decir "Post publicado." y aparecer en la lista.
-   Si aun falla, abre F12 > Console y copiame el error exacto, que ahora si dira el motivo real.
+## Cómo funciona para visitantes
+- Sin registro: pueden dar like (1 por navegador), comentar anónimo o con nombre, ver visitas.
+- Likes y visitas se guardan en Supabase.
+- Los anuncios son espacios 728x90 + 300x250 + 300x600 para AdSense.
 
 ## Si algo falla
-- Si ves "Error en config.js": revisa que en GitHub config.js si sea el nuevo con `window.`
-- Si ves "column does not exist": es que no ejecutaste el nuevo supabase.sql completo.
-- Si ves RLS / row-level security: es que no se crearon las politicas, vuelve a ejecutar supabase.sql.
+- "No se pudieron cargar los posts: ..." -> Copia el mensaje tal cual. Casi siempre es que falta correr supabase.sql.
+- "Acceso incorrecto" -> La contraseña en Supabase app_settings id=1 no coincide. Cámbiala ahí, no en GitHub.
+- No subas tu service_role key a GitHub. Solo la publishable que ya está en config.js.
