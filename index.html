@@ -96,7 +96,7 @@ select.input option{background:#101017}
     <p id="debugText" class="mt-2 text-[15px] leading-relaxed text-slate-200"></p>
     <div class="mt-3 flex flex-wrap gap-2">
       <button onclick="runDiagnostico()" class="rounded-full bg-yellow-400 px-5 py-2.5 text-sm font-bold text-black">🔍 Volver a diagnosticar</button>
-      <button onclick="document.getElementById('debugBox').classList.add('hidden')" class="rounded-full border border-white/20 px-5 py-2.5 text-sm font-bold">Ocultar</button>
+      <button onclick="testConexion()" class="rounded-full bg-white px-5 py-2.5 text-sm font-bold text-black">🧪 Probar conexión</button><button onclick="document.getElementById('debugBox').classList.add('hidden')" class="rounded-full border border-white/20 px-5 py-2.5 text-sm font-bold">Ocultar</button>
     </div>
   </div>
 
@@ -233,13 +233,38 @@ select.input option{background:#101017}
 
 <script>
 let supabaseClient=null, isAdmin=false, currentFilter='Todos', allPosts=[], allComments=[];
-function isConfigured(){return typeof SUPABASE_URL!=='undefined' && SUPABASE_URL && !SUPABASE_URL.includes('TU_') && typeof SUPABASE_ANON_KEY!=='undefined' && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes('TU_')}
-if(isConfigured()){
-  supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-  loadAll();
-} else {
-  document.getElementById('grid').innerHTML='<p class="p-5">Configura Supabase: edita config.js</p>';
+function showConnError(msg){
+  let box=document.getElementById('debugBox');
+  let txt=document.getElementById('debugText');
+  if(box&&txt){ box.classList.remove('hidden'); txt.innerHTML=msg; }
+}
+
+function isConfigured(){
+  let u = (typeof SUPABASE_URL!=='undefined' ? SUPABASE_URL : window.SUPABASE_URL);
+  let k = (typeof SUPABASE_ANON_KEY!=='undefined' ? SUPABASE_ANON_KEY : window.SUPABASE_ANON_KEY);
+  return u && k && !String(u).includes('TU_') && !String(k).includes('TU_');
+}
+function getCfg(){
+  let u = (typeof SUPABASE_URL!=='undefined' ? SUPABASE_URL : window.SUPABASE_URL);
+  let k = (typeof SUPABASE_ANON_KEY!=='undefined' ? SUPABASE_ANON_KEY : window.SUPABASE_ANON_KEY);
+  return {u:String(u||''), k:String(k||'')};
+}
+if(typeof supabase==='undefined'){
+  document.getElementById('grid').innerHTML='<p class="p-5 text-red-300">La librería de Supabase no cargó (CDN bloqueado). Recarga con Ctrl+Shift+R.</p>';
   document.getElementById('loadMsg').style.display='none';
+  showConnError('<b>La librería de Supabase no cargó.</b><br>El archivo supabase-js del CDN no se descargó. Recarga con Ctrl+Shift+R o abre en incógnito. Si sigue igual, tu navegador / adblock está bloqueando cdn.jsdelivr.net.');
+} else if(!isConfigured()){
+  let cfg=getCfg();
+  document.getElementById('grid').innerHTML='<p class="p-5 text-red-300">config.js no se cargó o está vacío.</p>';
+  document.getElementById('loadMsg').style.display='none';
+  showConnError('<b>config.js no se cargó.</b><br>El navegador no encontró tu URL y llave. En GitHub, abre el archivo <b>config.js</b> y verifica que tenga:<br><code style="background:#000;padding:2px 6px;border-radius:6px">window.SUPABASE_URL = "https://lgbbkneoujnysadryegf.supabase.co";</code><br>Sin <b>/rest/v1/</b> al final, y la llave que empieza con <b>sb_publishable_</b>. Si config.js está bien pero la web sigue sin conectarse, es que Vercel todavía está sirviendo el index.html viejo (caché). Espera 2 min y abre con Ctrl+Shift+R.');
+} else {
+  let cfg=getCfg();
+  if(cfg.u.endsWith('/rest/v1/') || cfg.u.endsWith('/rest/v1')){
+    showConnError('<b>config.js tiene /rest/v1/ al final y así NO conecta.</b><br>Debe quedar así: <code style="background:#000;padding:2px 6px;border-radius:6px">https://lgbbkneoujnysadryegf.supabase.co</code> sin nada más. Edita config.js en GitHub, guarda y espera a que Vercel redepliegue.');
+  }
+  supabaseClient=supabase.createClient(cfg.u, cfg.k);
+  loadAll();
 }
 function setFilter(f,el){
   currentFilter=f;
@@ -315,13 +340,29 @@ async function loadAll(){
     render();
     if(isAdmin) renderAdminList();
   }catch(e){
-    console.error(e);
+    console.error('CONEXION ERROR:', e);
     document.getElementById('grid').innerHTML='<p class="p-5 text-red-300">Error de conexión: '+e.message+'</p>';
+    let cfg2=getCfg();
+    let hint = 'Error exacto: <b>'+e.message+'</b><br><br>URL que está usando: <code style="background:#000;padding:2px 6px;border-radius:6px">'+cfg2.u+'</code><br>Llave empieza con: <code style="background:#000;padding:2px 6px;border-radius:6px">'+cfg2.k.slice(0,18)+'...</code><br><br>Si la URL termina en <b>/rest/v1/</b>, quítala en GitHub > config.js. Si la llave no empieza con <b>sb_publishable_</b>, está mal copiada. Si todo está bien, entra a Supabase > tu proyecto y mira si dice <b>Paused</b> (pausado) - si está pausado, dale a Restore / Unpause y espera 1 min.';
     document.getElementById('loadMsg').style.display='none';
     let debugEl=document.getElementById('debugBox');
     let debugText=document.getElementById('debugText');
     debugEl.classList.remove('hidden');
-    debugText.innerHTML='Error de conexión: '+e.message+'<br>Revisa que config.js tenga tu URL y llave y que Vercel haya redeplegado.';
+    debugText.innerHTML=hint;
+  }
+}
+async function testConexion(){
+  let cfg=getCfg();
+  let txt=document.getElementById('debugText');
+  document.getElementById('debugBox').classList.remove('hidden');
+  txt.innerHTML='Probando conexión a '+cfg.u+' ...';
+  try{
+    let res = await fetch(cfg.u + '/rest/v1/posts?select=id&limit=1', { headers: { 'apikey': cfg.k, 'Authorization': 'Bearer '+cfg.k } });
+    let body = await res.text();
+    txt.innerHTML = 'Prueba de conexión:<br><b>Status:</b> '+res.status+' '+res.statusText+'<br><b>Respuesta:</b> <code style="background:#000;padding:2px 6px;border-radius:6px">'+body.slice(0,300)+'</code><br><br>'
+      + (res.status===200 ? '✅ Supabase SÍ responde. Si aquí dice 200 pero los posts no se ven, es RLS o tabla vacía. Corre supabase.sql de este ZIP.' : res.status===401 ? '❌ 401 - La llave está mal. Copia de nuevo la llave publishable en Supabase > Settings > API Keys.' : res.status===404 ? '❌ 404 - La URL está mal o la tabla posts no existe. Corre supabase.sql.' : '❌ Error '+res.status+' - Revisa Supabase > tu proyecto > si dice Paused, dale Restore.');
+  }catch(e){
+    txt.innerHTML='❌ No se pudo hacer fetch a Supabase: <b>'+e.message+'</b><br>Esto pasa si la URL está mal, si el proyecto está pausado, o si el navegador bloquea la conexión.';
   }
 }
 async function runDiagnostico(){ document.getElementById('loadMsg').style.display='block'; document.getElementById('loadMsg').textContent='Diagnosticando...'; await loadAll(); }
