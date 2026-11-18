@@ -1,59 +1,63 @@
--- Elraizercommunity - CORREGIDO 2026 - Esquema en INGLES, igual que index.html
--- Ejecutar TODO en Supabase > SQL Editor > New Query > Run
--- Este archivo corrige el error principal: antes la tabla tenia columnas en ESPAÑOL
--- (titulo, juego, portada...) pero index.html pedía columnas en INGLES (title, game, cover...)
--- por eso todo fallaba con "column does not exist" / "No se pudo guardar el post".
+-- Elraizercommunity - FIX DEFINITIVO POSTS - No borra tus datos
+-- Pega TODO en Supabase > SQL Editor > New Query > Run
+-- Esto arregla: "entro pero no veo posts" y "no puedo crear posts"
+-- Causa 1: loadAll pedía posts + comments(count) con JOIN. Si no hay FK, fallaba y dejaba la lista vacía.
+-- Causa 2: savePost pedía descarga_url / imagen_url que no existían en la tabla vieja.
+-- Causa 3: faltaban políticas RLS para posts.
 
--- 1. Si ya tienes tablas viejas en español, las borramos para crearlas bien.
---    Si ya tienes posts que quieres conservar, NO ejecutes el DROP, avisame y te hago migracion.
---    Para un proyecto nuevo / sin datos importantes, este DROP es lo mas limpio:
-drop table if exists comments cascade;
-drop table if exists posts cascade;
-drop table if exists app_settings cascade;
-
--- 2. POSTS - esquema INGLES (el que usa index.html)
-create table posts (
+-- 1. Asegurar tablas
+create table if not exists posts (
   id bigint generated always as identity primary key,
-  title text not null,
-  game text not null,
-  platform text default 'YouTube',
-  category text default 'Juego',
-  cover text,
-  short_desc text,
-  long_desc text,
+  titulo text not null,
+  juego text,
+  plataforma text default 'YouTube',
+  descripcion text,
   video_url text,
-  downloads jsonb default '[]'::jsonb,
-  steps jsonb default '[]'::jsonb,
-  req_min text default '',
-  req_rec text default '',
-  tags text default '',
-  views int default 0,
+  descarga_url text,
+  imagen_url text,
   likes int default 0,
   created_at timestamptz default now()
 );
-
--- 3. COMMENTS - esquema INGLES (name, text)
-create table comments (
+create table if not exists comments (
   id bigint generated always as identity primary key,
   post_id bigint references posts(id) on delete cascade,
-  name text default 'Anónimo',
-  text text not null,
+  nombre text default 'Anónimo',
+  texto text not null,
   created_at timestamptz default now()
 );
-
--- 4. SETTINGS - esquema INGLES (socials jsonb, ads jsonb, total_visits)
-create table app_settings (
+create table if not exists app_settings (
   id int primary key,
   admin_password text default '',
-  socials jsonb default '{"youtube":"https://youtube.com/@elraizer","tiktok":"https://tiktok.com/@elraizer","kick":"https://kick.com/elraizer"}'::jsonb,
-  ads jsonb default '{"top":"","feed":"","sidebar":""}'::jsonb,
-  total_visits int default 0,
+  total_visitas int default 0,
   updated_at timestamptz default now()
 );
 
+-- 2. Agregar columnas que faltan si tu tabla ya existía (esto es lo que impide crear posts)
+alter table posts add column if not exists titulo text;
+alter table posts add column if not exists juego text;
+alter table posts add column if not exists plataforma text default 'YouTube';
+alter table posts add column if not exists descripcion text;
+alter table posts add column if not exists video_url text;
+alter table posts add column if not exists descarga_url text;
+alter table posts add column if not exists imagen_url text;
+alter table posts add column if not exists likes int default 0;
+alter table posts add column if not exists created_at timestamptz default now();
+
+alter table comments add column if not exists post_id bigint;
+alter table comments add column if not exists nombre text default 'Anónimo';
+alter table comments add column if not exists texto text;
+
+-- 3. Si comments.post_id no tiene FK, agrégala (sin esto el JOIN viejo fallaba). Si ya existe, no pasa nada.
+do $$ begin
+  begin
+    alter table comments add constraint comments_post_id_fkey foreign key (post_id) references posts(id) on delete cascade;
+  exception when duplicate_object then null;
+  end;
+end $$;
+
 insert into app_settings (id) values (1) on conflict (id) do nothing;
 
--- 5. RLS + POLITICAS PUBLICAS (la web es publica)
+-- 4. RLS + políticas para posts y comments (sin esto, entras pero no ves nada)
 alter table posts enable row level security;
 alter table comments enable row level security;
 alter table app_settings enable row level security;
@@ -73,12 +77,6 @@ drop policy if exists "public write settings" on app_settings;
 create policy "public read settings" on app_settings for select using (true);
 create policy "public write settings" on app_settings for all using (true) with check (true);
 
--- 6. POSTS DE EJEMPLO (ya en esquema INGLES)
-insert into posts (title, game, category, platform, cover, short_desc, long_desc, video_url, downloads, steps, req_min, req_rec, tags, views, likes) values
-('Minecraft con Shaders que uso en Directo','Minecraft','Mod','Kick','https://images.unsplash.com/photo-1587573089734-09cb69c0f2b4?w=900','Los shaders que uso en directo, se ve brutal.','Instalación paso a paso de los shaders que uso en mis directos de Minecraft.','', '[{"label":"Descargar OptiFine","url":"https://optifine.net/downloads"}]'::jsonb, '["Descarga OptiFine","Instala OptiFine","Descarga el shader","Pégalo en la carpeta shaderpacks","Actívalo en Video > Shaders"]'::jsonb, 'PC con 8GB RAM mínimo','PC con 16GB RAM recomendado','minecraft, shaders, directo', 125, 32),
-('GTA V - Cómo instalar los Mods que uso en YouTube','GTA V','Juego','YouTube','https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=900','Todos los mods que ves en mis videos.','Guía completa para instalar los mods de GTA V que uso en YouTube.','', '[{"label":"Descargar Script Hook V","url":"https://www.dev-c.com/gtav/scripthookv/"}]'::jsonb, '["Descarga Script Hook V","Copia los archivos a la carpeta de GTA V","Instala los mods","Abre el juego y prueba"]'::jsonb, 'GTA V original, 8GB RAM','GTA V original, 16GB RAM recomendado','gta, mods, youtube', 340, 89),
-('Valorant - Mi Configuración y Programas para Directos','Valorant','Programa','TikTok','https://images.unsplash.com/photo-1542751371-adc38448a05e?w=900','Mi setup para directos de Valorant.','Mi configuración, sensibilidad y programas que uso para directos.','', '[{"label":"Descargar Valorant","url":"https://playvalorant.com/"}]'::jsonb, '["Descarga Valorant desde la web oficial","Instala y crea cuenta","Aplica mi sensibilidad","Configura OBS como en el video"]'::jsonb, 'PC gamer, Windows 10/11','PC gamer, Windows 11','valorant, setup, tiktok', 210, 54);
-
--- DESPUES DE ESTO:
--- Ve a Table Editor > app_settings > id=1 > pon tu contraseña en admin_password y guarda.
--- No pongas tu contraseña en GitHub, solo ahí en Supabase.
+-- 5. VERIFICACIÓN: después de Run, ejecuta esto en otra pestaña para ver si ya tienes posts:
+-- select id, titulo, juego, plataforma from posts order by created_at desc;
+-- Si sale vacío, es que de verdad no hay posts, no es error. Crea uno desde Admin.

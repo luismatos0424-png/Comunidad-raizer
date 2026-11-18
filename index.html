@@ -2,291 +2,167 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Elraizercommunity - Comunidad Raizer</title>
-<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#08080d;--surface:#141419;--green:#00ff88;--purple:#a855f7}
-body{background:radial-gradient(900px 400px at 15% 0%,rgba(0,255,136,.12),transparent 60%),radial-gradient(900px 500px at 90% 10%,rgba(168,85,247,.16),transparent 60%),var(--bg);color:#f2f4ff;font-family:'Rajdhani',system-ui,sans-serif;margin:0}
-.font-display{font-family:'Orbitron',sans-serif}
-.hero-grid{background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:44px 44px}
-article{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
-article:hover{transform:translateY(-4px);border-color:rgba(0,255,136,.35)!important;box-shadow:0 20px 40px rgba(0,0,0,.45)}
-input,textarea,select{outline:none} input:focus,textarea:focus,select:focus{border-color:var(--green)!important;box-shadow:0 0 0 3px rgba(0,255,136,.15)}
-.line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0f;color:#fff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+a{color:#00ff88;text-decoration:none}
+.top{position:sticky;top:0;z-index:50;background:rgba(10,10,15,.92);backdrop-filter:blur(10px);border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;padding:14px 20px}
+.logo{font-weight:900;letter-spacing:.5px;font-size:20px}.logo span{color:#00ff88}
+.btn{background:#00ff88;color:#04120a;border:0;padding:10px 18px;border-radius:999px;font-weight:800;cursor:pointer}
+.btn-ghost{background:#1a1a22;color:#fff;border:1px solid #333;padding:9px 16px;border-radius:999px;cursor:pointer}
+.hero{padding:44px 20px 18px;max-width:1100px;margin:0 auto;text-align:center}
+.hero h1{font-size:52px;line-height:.95;letter-spacing:-1px}.hero h1 em{font-style:normal;color:#00ff88}
+.hero p{color:#b9b9c5;margin:16px auto;max-width:720px;line-height:1.6}
+.hero-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.stats{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:22px auto;max-width:900px}
+.stat{background:#14141c;border:1px solid #23232e;border-radius:16px;padding:14px 20px;min-width:140px}
+.stat b{font-size:26px;display:block}.stat span{color:#999;font-size:13px}
+.filters{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;padding:10px 20px}
+.filter{background:#17171f;border:1px solid #2a2a35;color:#ddd;padding:8px 16px;border-radius:999px;cursor:pointer}.filter.active{background:#00ff88;color:#000;border-color:#00ff88;font-weight:800}
+.ad-top{max-width:1100px;margin:14px auto;padding:0 20px}.ad{background:#101018;border:1px dashed #333;border-radius:12px;padding:16px;text-align:center;color:#888;font-size:13px;letter-spacing:1px}
+.wrap{max-width:1100px;margin:0 auto;padding:18px 20px 40px;display:grid;grid-template-columns:1fr 300px;gap:18px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.card{background:#14141c;border:1px solid #23232e;border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.card img{width:100%;height:180px;object-fit:cover;background:#222}
+.card-body{padding:16px}
+.badge{display:inline-block;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;margin-bottom:8px}
+.badge.YouTube{background:#ff0033}.badge.TikTok{background:#fff;color:#000}.badge.Kick{background:#00ff88;color:#000}.badge.Juegos{background:#7c5cff}
+.card h3{font-size:18px;margin:4px 0 6px}.card p{color:#b9b9c5;font-size:14px;line-height:1.5}
+.card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.small{background:#1e1e28;border:1px solid #333;color:#fff;padding:8px 12px;border-radius:999px;cursor:pointer;font-size:13px}
+.small.primary{background:#00ff88;color:#000;border-color:#00ff88;font-weight:800}
+.sidebar .ad{margin-bottom:16px}.side-box{background:#14141c;border:1px solid #23232e;border-radius:16px;padding:16px}
+.side-box h4{margin-bottom:10px}.side-box p{color:#b9b9c5;font-size:14px;line-height:1.6}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+.modal.open{display:flex}
+.modal-box{background:#15151d;border:1px solid #2a2a35;border-radius:18px;padding:22px;width:100%;max-width:420px}
+.modal-box h2{font-size:26px}.modal-box p{color:#aaa;margin:8px 0 14px}
+input,textarea,select{width:100%;background:#0f0f15;border:1px solid #333;color:#fff;padding:12px;border-radius:12px;margin:6px 0;outline:none}
+input:focus,textarea:focus{border-color:#00ff88}
+.err{color:#ff5b5b;margin-top:10px;font-size:14px;min-height:18px}
+.admin{max-width:1100px;margin:0 auto;padding:0 20px 20px;display:none}
+.admin.open{display:block}
+.admin-box{background:#14141c;border:1px solid #23232e;border-radius:18px;padding:18px}
+.post-item{display:flex;gap:12px;align-items:center;justify-content:space-between;background:#0f0f15;border:1px solid #222;padding:10px;border-radius:12px;margin-top:10px}
+.comments{margin-top:12px;background:#0f0f15;border-radius:12px;padding:10px;display:none}.comments.open{display:block}
+.comment{border-bottom:1px solid #222;padding:8px 0;font-size:14px}.comment b{font-size:13px}
+footer{border-top:1px solid #222;padding:20px;text-align:center;color:#888;font-size:13px}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}.grid{grid-template-columns:1fr}.hero h1{font-size:38px}}
 </style>
 </head>
 <body>
-<header class="sticky top-0 z-40 border-b border-white/10 bg-[#0a0a0f]/95 backdrop-blur">
-  <div class="mx-auto flex max-w-[1280px] items-center justify-between gap-3 px-4 py-3">
-    <a href="#inicio" class="flex items-center gap-2.5"><span class="grid h-10 w-10 place-items-center rounded-xl bg-[#00ff88] font-display text-xl font-black text-black">R</span><span class="leading-none"><span class="block font-display text-[15px] font-black tracking-wide">ELRAIZER<span class="text-[#00ff88]">COMMUNITY</span></span><span class="block text-[10px] font-bold tracking-[.28em] text-slate-400">COMUNIDAD RAIZER</span></span></a>
-    <div class="flex items-center gap-2">
-      <span id="adminBadge" class="hidden items-center gap-1.5 rounded-full border border-[#00ff88]/30 bg-[#00ff88]/10 px-3 py-2 text-xs font-bold text-[#00ff88]">● Admin</span>
-      <button id="btnAcceder" onclick="openLogin()" class="rounded-full bg-[#00ff88] px-5 py-2.5 text-sm font-bold text-black">Acceder</button>
-      <button id="btnSalir" onclick="logout()" class="hidden rounded-full border border-white/20 px-4 py-2.5 text-sm font-bold">Salir</button>
-    </div>
-  </div>
-</header>
+<header class="top"><div class="logo">EL<span>RAIZER</span>COMMUNITY</div><div style="display:flex;gap:8px"><button class="btn-ghost" onclick="document.getElementById('posts').scrollIntoView({behavior:'smooth'})">Ver posts</button><button class="btn" onclick="openLogin()">Acceder</button></div></header>
 
-<main id="inicio" class="mx-auto max-w-[1280px] px-4 pb-16">
-  <div id="aviso" class="hidden mt-4 rounded-xl border border-[#00ff88]/30 bg-[#00ff88]/10 px-4 py-3 text-sm flex justify-between gap-3"><span id="avisoText"></span><button onclick="hideAviso()">✕</button></div>
+<section class="hero">
+<h1>EL<em>RAIZER</em><br>COMMUNITY</h1>
+<p>Videos, juegos y links de YouTube, TikTok y Kick. Todo lo que juego en mis directos, con links de descarga y como instalarlo.</p>
+<div class="hero-actions"><button class="btn" onclick="document.getElementById('posts').scrollIntoView({behavior:'smooth'})">Ver posts ↓</button><button class="btn-ghost" onclick="openLogin()">Acceder</button></div>
+<div class="stats"><div class="stat"><b id="statPosts">0</b><span>Posts</span></div><div class="stat"><b id="statLikes">0</b><span>Likes</span></div><div class="stat"><b id="statVisitas">0</b><span>Visitas</span></div></div>
+</section>
 
-  <section class="hero-grid relative mt-5 overflow-hidden rounded-[28px] border border-white/10 bg-[#111116] px-5 py-10 sm:px-10 sm:py-14">
-    <div class="absolute -left-16 -top-16 h-64 w-64 rounded-full bg-[#00ff88]/15 blur-3xl"></div>
-    <div class="absolute -bottom-20 right-0 h-72 w-72 rounded-full bg-[#a855f7]/20 blur-3xl"></div>
-    <div class="relative max-w-3xl">
-      <span class="inline-flex items-center gap-2 rounded-full border border-[#00ff88]/30 bg-black/40 px-3 py-1 text-xs font-bold tracking-widest text-[#00ff88]"><span class="h-2 w-2 rounded-full bg-[#00ff88] animate-pulse"></span>COMUNIDAD ACTIVA</span>
-      <h1 class="mt-5 font-display text-[clamp(2rem,6vw,4.2rem)] font-black leading-[.95] tracking-tight">Bienvenidos a mi comunidad</h1>
-      <p class="mt-4 max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg">Videos, juegos y links de YouTube, TikTok y Kick - Todo lo que juego en mis directos, con links de descarga y cómo instalarlo.</p>
-      <div class="mt-7 flex flex-wrap gap-3"><a href="#posts" class="rounded-full bg-[#00ff88] px-6 py-3 font-display text-sm font-bold text-black">Ver posts</a><button onclick="openLogin()" class="rounded-full border border-white/20 bg-white/5 px-6 py-3 font-display text-sm font-bold">Acceder</button></div>
-      <div class="mt-8 grid max-w-xl grid-cols-3 gap-3">
-        <div class="rounded-2xl border border-white/10 bg-black/30 p-3"><div id="statPosts" class="font-display text-xl font-black text-[#00ff88]">0</div><div class="text-[11px] uppercase tracking-widest text-slate-400">Posts</div></div>
-        <div class="rounded-2xl border border-white/10 bg-black/30 p-3"><div id="statLikes" class="font-display text-xl font-black text-[#00ff88]">0</div><div class="text-[11px] uppercase tracking-widest text-slate-400">Likes</div></div>
-        <div class="rounded-2xl border border-white/10 bg-black/30 p-3"><div id="statVisits" class="font-display text-xl font-black text-[#00ff88]">0</div><div class="text-[11px] uppercase tracking-widest text-slate-400">Visitas</div></div>
-      </div>
-    </div>
-  </section>
+<div class="filters" id="filters">
+<button class="filter active" onclick="setFilter('Todos',this)">Todos</button>
+<button class="filter" onclick="setFilter('YouTube',this)">YouTube</button>
+<button class="filter" onclick="setFilter('TikTok',this)">TikTok</button>
+<button class="filter" onclick="setFilter('Kick',this)">Kick</button>
+<button class="filter" onclick="setFilter('Juegos',this)">Juegos</button>
+</div>
 
-  <section class="mt-6 overflow-hidden rounded-2xl border border-dashed border-white/15 bg-[#111116]"><div class="flex min-h-[90px] flex-col items-center justify-center px-4 py-4 text-center"><span class="text-[11px] font-bold tracking-[.25em] text-slate-500">PUBLICIDAD</span><p class="mt-1 font-display text-sm font-bold text-slate-300">Espacio publicitario 728x90</p></div></section>
+<div class="ad-top"><div class="ad">ESPACIO PUBLICITARIO — 728 x 90<br><span style="font-size:11px">Aqui va tu anuncio de Google AdSense / patrocinador</span></div></div>
 
-  <!-- PANEL ADMIN -->
-  <section id="admin" class="hidden mt-6 rounded-3xl border border-[#00ff88]/25 bg-[#0f1712] p-4 sm:p-6">
-    <div class="flex flex-wrap items-center justify-between gap-3"><div><h2 class="font-display text-xl font-black">Panel admin</h2><p class="text-sm text-slate-400">Sesión activa. Crea, edita y elimina posts.</p></div><button onclick="clearForm()" class="rounded-full border border-white/20 px-4 py-2 text-sm font-bold">Limpiar formulario</button></div>
-    <form onsubmit="event.preventDefault(); savePost()" class="mt-5 grid gap-4">
-      <div class="grid gap-4 md:grid-cols-2">
-        <label class="text-sm font-bold">Título<input id="fTitle" class="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 font-normal" placeholder="Título del post"></label>
-        <label class="text-sm font-bold">Juego<input id="fGame" class="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 font-normal" placeholder="Nombre del juego"></label>
-      </div>
-      <div class="grid gap-4 md:grid-cols-2">
-        <label class="text-sm font-bold">Plataforma<select id="fPlatform" class="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 font-normal"><option>YouTube</option><option>TikTok</option><option>Kick</option></select></label>
-        <label class="text-sm font-bold">Imagen (URL)<input id="fCover" class="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 font-normal" placeholder="https://…"></label>
-      </div>
-      <label class="text-sm font-bold">Descripción<textarea id="fDesc" rows="3" class="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 font-normal" placeholder="De qué va este post, cómo se instala…"></textarea></label>
-      <div class="grid gap-4 md:grid-cols-2">
-        <label class="text-sm font-bold">Link del video<input id="fVideo" class="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 font-normal" placeholder="https://…"></label>
-        <label class="text-sm font-bold">Link de descarga / juego<input id="fDownload" class="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 font-normal" placeholder="https://…"></label>
-      </div>
-      <div class="flex flex-wrap items-center gap-3"><button type="submit" id="btnSave" class="rounded-full bg-[#00ff88] px-6 py-3 text-sm font-bold text-black">Guardar</button><button type="button" id="btnCancelEdit" onclick="clearForm()" class="hidden rounded-full border border-white/20 px-5 py-3 text-sm font-bold">Cancelar edición</button><span class="text-xs text-slate-500">Solo se guardan enlaces. No se suben archivos pesados.</span></div>
-    </form>
-    <div class="mt-6 border-t border-white/10 pt-5"><h3 class="font-display text-sm font-bold">Lista de posts (<span id="adminCount">0</span>)</h3><div id="adminList" class="mt-3 space-y-2"></div></div>
-  </section>
+<div class="admin" id="adminPanel"><div class="admin-box">
+<h3>Panel Admin — Nuevo Post</h3>
+<input id="fTitulo" placeholder="Titulo del post">
+<input id="fJuego" placeholder="Juego (ej: Free Fire, GTA V)">
+<select id="fPlataforma"><option>YouTube</option><option>TikTok</option><option>Kick</option><option>Juegos</option></select>
+<textarea id="fDesc" rows="3" placeholder="Descripcion / como instalar"></textarea>
+<input id="fVideo" placeholder="Link del video (YouTube / TikTok / Kick)">
+<input id="fDescarga" placeholder="Link de descarga del juego / archivo">
+<input id="fImagen" placeholder="Link de imagen (opcional, si lo dejas vacio usa una portada)">
+<button class="btn" onclick="savePost()">Guardar post</button>
+<button class="btn-ghost" onclick="logout()">Cerrar sesion</button>
+<div id="adminMsg" style="margin-top:10px;color:#00ff88"></div>
+<h4 style="margin-top:18px">Mis posts</h4><div id="adminList"></div>
+</div></div>
 
-  <div class="mt-8 grid items-start gap-6 lg:grid-cols-[1fr_300px]">
-    <div>
-      <div id="posts"><p class="text-xs font-bold tracking-[.25em] text-[#00ff88]">COMUNIDAD</p><h2 class="font-display text-2xl font-black sm:text-3xl">Últimos posts</h2></div>
-      <div class="mt-4 flex flex-wrap gap-2" id="filters"></div>
-      <div id="postsGrid" class="mt-5 grid gap-5 sm:grid-cols-2"></div>
-      <div id="loading" class="mt-8 text-slate-400">Cargando comunidad…</div>
-    </div>
-    <aside class="space-y-5 lg:sticky lg:top-[76px]">
-      <section class="flex min-h-[250px] flex-col items-center justify-center rounded-3xl border border-dashed border-white/15 bg-[#111116] p-5 text-center"><p class="font-display font-bold">Anuncio 300x250</p><p class="mt-1 text-sm text-slate-400">Tu anuncio lateral aquí.</p></section>
-      <section class="rounded-3xl border border-white/10 bg-[#141419] p-5"><h3 class="font-display font-bold">Sígueme</h3><div class="mt-4 grid gap-2"><a id="linkYT" href="#" target="_blank" rel="noopener" class="flex justify-between rounded-xl bg-red-500/15 px-4 py-3 text-sm font-bold">YouTube <span>↗</span></a><a id="linkTT" href="#" target="_blank" rel="noopener" class="flex justify-between rounded-xl bg-white/5 px-4 py-3 text-sm font-bold">TikTok <span>↗</span></a><a id="linkKick" href="#" target="_blank" rel="noopener" class="flex justify-between rounded-xl bg-[#00ff88]/10 px-4 py-3 text-sm font-bold text-[#00ff88]">Kick <span>↗</span></a></div><p class="mt-4 text-xs leading-relaxed text-slate-400">Solo enlaces oficiales. No alojamos archivos pesados.</p></section>
-    </aside>
-  </div>
+<main class="wrap" id="posts">
+<div>
+<div class="grid" id="grid"></div>
+<div id="empty" style="display:none;text-align:center;color:#888;padding:30px">Aun no hay posts en esta categoria.<br>Entra como admin y crea el primero.</div>
+</div>
+<aside class="sidebar">
+<div class="ad">ANUNCIO<br>300 x 250<br><span style="font-size:11px">Espacio publicitario</span></div>
+<div class="side-box"><h4>📺 Sigueme</h4><p>Encuentra todos mis directos, gameplays y los juegos que uso, con sus links oficiales de descarga.<br><br>• YouTube<br>• TikTok<br>• Kick</p></div>
+<div class="side-box" style="margin-top:14px"><h4>ℹ️ Como funciona</h4><p>1. Yo publico el video y el juego.<br>2. Tu le das like y comentas sin registrarte.<br>3. Descargas solo desde el link oficial que pongo.</p></div>
+</aside>
 </main>
 
-<footer class="border-t border-white/10 bg-black/40"><div class="mx-auto flex max-w-[1280px] flex-col gap-4 px-4 py-8 sm:flex-row sm:items-center sm:justify-between"><div><p class="font-display font-black">ELRAIZER<span class="text-[#00ff88]">COMMUNITY</span></p><p class="mt-1 text-sm text-slate-400">Elraizercommunity - Comunidad Raizer</p></div><span class="flex items-center gap-2 text-xs font-bold text-[#00ff88]"><span class="h-2 w-2 rounded-full bg-[#00ff88] animate-pulse"></span>Comunidad activa</span></div></footer>
+<footer>Elraizercommunity — Comunidad Raizer • YouTube • TikTok • Kick</footer>
 
-<!-- LOGIN -->
-<div id="loginModal" class="hidden fixed inset-0 z-50 grid place-items-center bg-black/80 p-4"><div class="w-full max-w-sm rounded-3xl border border-white/10 bg-[#141419] p-6"><div class="flex justify-between"><div><h2 class="font-display text-xl font-black">Acceder</h2><p class="mt-1 text-sm text-slate-400">Solo el administrador puede entrar</p></div><button onclick="closeLogin()">✕</button></div><label class="mt-5 block text-sm font-bold">Contraseña<input id="loginPass" type="password" placeholder="Contraseña" class="mt-1 w-full rounded-xl border border-white/10 bg-black/30 p-3 font-normal"></label><button onclick="doLogin()" class="mt-4 w-full rounded-full bg-[#00ff88] py-3 font-bold text-black">Entrar</button></div></div>
-
-<!-- DETALLE -->
-<div id="detailModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/85 p-3 sm:p-6"><div class="mx-auto max-w-4xl rounded-[28px] border border-white/10 bg-[#141419]"><div class="relative"><img id="dCover" class="max-h-[380px] w-full rounded-t-[28px] object-cover"><button onclick="closeDetail()" class="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-black/70">✕</button></div><div class="p-5 sm:p-8"><h2 id="dTitle" class="font-display text-2xl font-black leading-tight sm:text-4xl"></h2><p id="dMeta" class="mt-2 font-bold text-[#00ff88]"></p><p id="dDesc" class="mt-4 leading-relaxed text-slate-300"></p><div id="dVideoWrap" class="mt-7 rounded-2xl border border-white/10 bg-black/30 p-4"><h3 class="font-display font-bold">Video</h3><a id="dVideo" href="#" target="_blank" rel="noopener" class="mt-3 flex justify-between rounded-xl bg-[#00ff88] px-4 py-3 text-sm font-bold text-black">Ver video ↗</a></div><div class="mt-7"><h3 class="font-display text-lg font-bold">Enlaces de descarga</h3><div id="dDownloads" class="mt-4 grid gap-3 sm:grid-cols-2"></div></div><div class="mt-7 flex flex-wrap gap-3 border-y border-white/10 py-5"><button id="dLike" class="rounded-full bg-red-500/15 px-5 py-3 font-bold text-red-300">♥ Me gusta • <span id="dLikes"></span></button><span id="dViews" class="text-sm text-slate-400"></span></div><div class="mt-6"><h3 class="font-display text-lg font-bold">Comentarios (<span id="dCommentCount">0</span>)</h3><div class="mt-4 grid gap-3 sm:grid-cols-[160px_1fr_auto]"><input id="cName" placeholder="Nombre (opcional)" class="rounded-xl border border-white/10 bg-black/30 p-3"><input id="cText" placeholder="Escribe tu comentario…" class="rounded-xl border border-white/10 bg-black/30 p-3"><button onclick="addComment()" class="rounded-xl bg-[#a855f7] px-5 py-3 font-bold">Publicar</button></div><div id="dComments" class="mt-5 space-y-3"></div></div></div></div></div>
+<div class="modal" id="loginModal"><div class="modal-box">
+<h2>Acceder</h2><p>Solo el administrador puede entrar.</p>
+<label>Contraseña</label><input type="password" id="passInput" placeholder="Contraseña">
+<button class="btn" style="width:100%" onclick="checkAdmin()">Entrar</button>
+<button class="btn-ghost" style="width:100%;margin-top:8px" onclick="closeLogin()">Cancelar</button>
+<div class="err" id="loginError"></div>
+</div></div>
 
 <script>
-let sb=null, posts=[], comments=[], settings=null, isAdmin=false, filter='Todos', currentPost=null, editingId=null, likedIds=new Set(JSON.parse(localStorage.getItem('liked_raizer')||'[]'));
-
-function showMsg(t){ const a=document.getElementById('aviso'); document.getElementById('avisoText').textContent=t; a.classList.remove('hidden'); }
-function hideAviso(){ document.getElementById('aviso').classList.add('hidden'); }
-function fmt(n){ return new Intl.NumberFormat('es-ES').format(n||0); }
-function fmtDate(d){ return new Date(d).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'}); }
-function platClass(p){ return p==='YouTube'?'bg-red-600 text-white':p==='TikTok'?'bg-white text-black':p==='Kick'?'bg-[#00ff88] text-black':'bg-[#a855f7] text-white'; }
-
-async function init(){
-  // CORREGIDO: config.js usa const, que NO crea window.SUPABASE_URL. Leemos ambas formas.
-  const url = (typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : null) || window.SUPABASE_URL || window.SUPABASE_PROJECT_URL;
-  const key = (typeof SUPABASE_ANON_KEY !== 'undefined' ? SUPABASE_ANON_KEY : null) || (typeof SUPABASE_PUBLISHABLE_KEY !== 'undefined' ? SUPABASE_PUBLISHABLE_KEY : null) || window.SUPABASE_ANON_KEY || window.SUPABASE_KEY || window.SUPABASE_PUBLISHABLE_KEY;
-  if(!url || !key || url.includes('/rest/v1/')){ showMsg('Error en config.js: la URL no debe terminar en /rest/v1/ y la llave debe ser la publishable/anon. Revisa config.js en GitHub y vuelve a desplegar.'); document.getElementById('loading').textContent='Revisa config.js'; return; }
-  sb = supabase.createClient(url, key);
-  await loadSettings();
-  await loadPosts();
-  await loadComments();
-  renderFilters();
-  renderPosts();
-  document.getElementById('loading').style.display='none';
+let supabaseClient=null, isAdmin=false, currentFilter='Todos', allPosts=[];
+function isConfigured(){return typeof SUPABASE_URL!=='undefined' && SUPABASE_URL && !SUPABASE_URL.includes('TU_') && typeof SUPABASE_ANON_KEY!=='undefined' && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes('TU_')}
+if(isConfigured()){supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY); loadAll();}
+else{document.getElementById('grid').innerHTML='<p style="padding:20px">Configura Supabase primero: edita config.js con tu URL y clave.</p>'}
+function setFilter(f,el){currentFilter=f;document.querySelectorAll('.filter').forEach(b=>b.classList.remove('active'));el.classList.add('active');render();}
+function openLogin(){document.getElementById('loginModal').classList.add('open');}
+function closeLogin(){document.getElementById('loginModal').classList.remove('open');}
+async function checkAdmin(){let pass=document.getElementById('passInput').value;let {data}=await supabaseClient.from('app_settings').select('admin_password').eq('id',1).single();if(data&&data.admin_password&&pass===data.admin_password){isAdmin=true;closeLogin();document.getElementById('adminPanel').classList.add('open');document.getElementById('adminMsg').textContent='Sesion iniciada. Ya puedes publicar.';renderAdminList();}else{document.getElementById('loginError').textContent='Acceso incorrecto';}}
+function logout(){isAdmin=false;document.getElementById('adminPanel').classList.remove('open');}
+async function loadAll(){
+try{
+let {data:settings}=await supabaseClient.from('app_settings').select('*').eq('id',1).single();
+let visitas=(settings?.total_visitas||0)+1;
+try{ await supabaseClient.from('app_settings').update({total_visitas:visitas}).eq('id',1); }catch(_){} // si RLS bloquea el UPDATE, no importa, los posts igual deben cargar
+document.getElementById('statVisitas').textContent=visitas;
+let {data:posts, error:errPosts}=await supabaseClient.from('posts').select('*').order('created_at',{ascending:false});
+if(errPosts){ console.error('POSTS ERROR:', errPosts); document.getElementById('grid').innerHTML='<p style="padding:20px;color:#ff8080">No se pudieron cargar los posts: '+errPosts.message+'<br><br>En Supabase > SQL Editor ejecuta el supabase.sql de este ZIP y recarga.</p>'; return; }
+allPosts=posts||[];render();
+}catch(e){ console.error(e); document.getElementById('grid').innerHTML='<p style="padding:20px;color:#ff8080">Error de conexión: '+e.message+'</p>'; }
 }
-async function loadSettings(){
-  try{
-    let {data,error}=await sb.from('app_settings').select('*').eq('id',1).single();
-    if(error || !data){
-      // crear fila inicial sin contraseña expuesta
-      const {data:ins}=await sb.from('app_settings').insert([{id:1, socials:{youtube:'https://youtube.com/@elraizer',tiktok:'https://tiktok.com/@elraizer',kick:'https://kick.com/elraizer'}, ads:{top:'',feed:'',sidebar:''}, total_visits:0}]).select().single();
-      data=ins||{socials:{youtube:'#',tiktok:'#',kick:'#'}, total_visits:0};
-    }
-    settings=data;
-    // visitas
-    try{
-      const nv=(data.total_visits||0)+1;
-      await sb.from('app_settings').update({total_visits:nv}).eq('id',1);
-      settings.total_visits=nv;
-    }catch(e){}
-    document.getElementById('statVisits').textContent=fmt(settings.total_visits||0);
-    const s=settings.socials||{};
-    if(s.youtube) document.getElementById('linkYT').href=s.youtube;
-    if(s.tiktok) document.getElementById('linkTT').href=s.tiktok;
-    if(s.kick) document.getElementById('linkKick').href=s.kick;
-  }catch(e){ console.error(e); showMsg('No se pudo cargar la configuración. Revisa Supabase y RLS.'); }
+function render(){
+let list=allPosts.filter(p=>currentFilter==='Todos'||p.plataforma===currentFilter);
+document.getElementById('statPosts').textContent=allPosts.length;
+document.getElementById('statLikes').textContent=allPosts.reduce((s,p)=>s+(p.likes||0),0);
+document.getElementById('empty').style.display=list.length?'none':'block';
+document.getElementById('grid').innerHTML=list.map(p=>`
+<article class="card">
+<img src="${p.imagen_url||'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80'}" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80'">
+<div class="card-body">
+<span class="badge ${p.plataforma||'YouTube'}">${p.plataforma||'YouTube'}</span>
+<div style="font-size:12px;color:#00ff88;font-weight:700">🎮 ${p.juego||''}</div>
+<h3>${p.titulo||''}</h3><p>${p.descripcion||''}</p>
+<div class="card-actions">
+<button class="small primary" onclick="likePost('${p.id}',${p.likes||0})">❤️ ${p.likes||0} Me gusta</button>
+<button class="small" onclick="toggleComments('${p.id}')">💬 Comentarios</button>
+${p.video_url?`<a class="small" href="${p.video_url}" target="_blank">▶️ Ver video</a>`:''}
+${p.descarga_url?`<a class="small" href="${p.descarga_url}" target="_blank">⬇️ Descargar</a>`:''}
+</div>
+<div class="comments" id="c-${p.id}"><div id="list-${p.id}"></div><input id="n-${p.id}" placeholder="Tu nombre (opcional)"><textarea id="t-${p.id}" rows="2" placeholder="Escribe tu comentario..."></textarea><button class="small primary" onclick="sendComment('${p.id}')">Publicar comentario</button></div>
+</div></article>`).join('');
 }
-async function loadPosts(){
-  const {data,error}=await sb.from('posts').select('*').order('created_at',{ascending:false});
-  if(error){ showMsg('No se pudo conectar con Supabase: '+error.message+' — Revisa config.js, que las tablas posts/comments/app_settings existan y que RLS permita leer (SELECT) para anon.'); posts=[]; return; }
-  posts=data||[];
-  document.getElementById('statPosts').textContent=posts.length;
-  document.getElementById('statLikes').textContent=fmt(posts.reduce((a,p)=>a+(p.likes||0),0));
-}
-async function loadComments(){
-  const {data}=await sb.from('comments').select('*').order('created_at',{ascending:false});
-  comments=data||[];
-}
-function renderFilters(){
-  const cats=['Todos','YouTube','TikTok','Kick','Juegos'];
-  document.getElementById('filters').innerHTML=cats.map(c=>`<button onclick="setFilter('${c}')" class="rounded-full px-4 py-2 text-sm font-bold ${filter===c?'bg-[#00ff88] text-black':'border border-white/10 bg-white/5'}">${c}</button>`).join('');
-}
-function setFilter(f){ filter=f; renderFilters(); renderPosts(); }
-function filtered(){
-  return posts.filter(p=>{
-    if(filter==='Todos') return true;
-    if(filter==='Juegos') return p.category==='Juego';
-    return p.platform===filter;
-  });
-}
-function postComments(id){ return comments.filter(c=>c.post_id===id || c.postId===id); }
-function renderPosts(){
-  const list=filtered();
-  const grid=document.getElementById('postsGrid');
-  if(!list.length){ grid.innerHTML='<div class="rounded-3xl border border-white/10 p-8 text-center text-slate-400">Sin resultados. Prueba otro filtro.</div>'; renderAdminList(); return; }
-  grid.innerHTML=list.map(p=>`
-  <article class="overflow-hidden rounded-3xl border border-white/10 bg-[#141419]">
-    <button onclick="openPost('${p.id}')" class="block w-full text-left">
-      <div class="relative aspect-[16/9] bg-[#1c1c24] overflow-hidden"><img src="${p.cover||'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&q=80'}" class="h-full w-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&q=80'"><span class="absolute left-3 top-3 rounded-full px-2.5 py-1 text-[11px] font-black ${platClass(p.platform)}">${p.platform||''}</span><span class="absolute right-3 top-3 rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-bold">${p.category||'Juego'}</span></div>
-      <div class="p-4"><p class="text-sm font-bold text-[#00ff88]">${p.game||''}</p><h3 class="mt-1 min-h-[52px] font-display text-[17px] font-bold leading-snug">${escapeHtml(p.title||'')}</h3><p class="line-clamp-2 mt-2 text-sm text-slate-400">${escapeHtml(p.short_desc||p.long_desc||'')}</p><div class="mt-4 flex gap-3 text-xs text-slate-400"><span>👁 ${fmt(p.views)}</span><span>♥ ${fmt(p.likes)}</span><span>💬 ${postComments(p.id).length}</span><span class="ml-auto">${fmtDate(p.created_at)}</span></div></div>
-    </button>
-    <div class="flex gap-2 p-4 pt-0"><button onclick="likePost('${p.id}')" class="rounded-full border border-white/15 px-4 py-2.5 text-sm font-bold">♥ ${fmt(p.likes)}</button><button onclick="openPost('${p.id}')" class="rounded-full border border-white/15 px-4 py-2.5 text-sm font-bold">Ver</button>${p.downloads && p.downloads[0] ? `<a href="${p.downloads[0].url}" target="_blank" rel="noopener" class="flex flex-1 items-center justify-center rounded-full bg-[#00ff88] px-4 py-2.5 text-sm font-bold text-black">Descargar</a>` : `<span class="flex flex-1 items-center justify-center rounded-full bg-white/5 px-4 py-2.5 text-sm font-bold text-slate-400">Sin enlace</span>`}</div>
-    ${isAdmin?`<div class="flex gap-2 border-t border-white/10 p-3"><button onclick="editPost('${p.id}')" class="flex flex-1 justify-center rounded-full bg-[#a855f7] py-2 text-xs font-bold">Editar</button><button onclick="deletePost('${p.id}')" class="flex flex-1 justify-center rounded-full bg-red-500/20 py-2 text-xs font-bold text-red-300">Eliminar</button></div>`:''}
-  </article>`).join('');
-  renderAdminList();
-}
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-async function openPost(id){
-  const p=posts.find(x=>String(x.id)===String(id)); if(!p) return;
-  currentPost=p;
-  try{ await sb.from('posts').update({views:(p.views||0)+1}).eq('id',p.id); p.views=(p.views||0)+1; }catch(e){}
-  document.getElementById('dCover').src=p.cover||'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&q=80';
-  document.getElementById('dTitle').textContent=p.title;
-  document.getElementById('dMeta').textContent=(p.game||'')+' • '+fmtDate(p.created_at);
-  document.getElementById('dDesc').textContent=p.long_desc||p.short_desc||'';
-  const v=document.getElementById('dVideo'); v.href=p.video_url||'#'; document.getElementById('dVideoWrap').style.display=p.video_url?'block':'none';
-  const dl=document.getElementById('dDownloads');
-  const downs=p.downloads||[];
-  dl.innerHTML= downs.length? downs.map(d=>`<a href="${d.url}" target="_blank" rel="noopener" class="flex justify-center rounded-2xl bg-[#00ff88] px-4 py-3.5 text-sm font-bold text-black">${escapeHtml(d.label||'Descargar')}</a>`).join('') : '<p class="text-sm text-slate-500">Este post todavía no tiene enlace.</p>';
-  document.getElementById('dLikes').textContent=fmt(p.likes);
-  document.getElementById('dViews').textContent='👁 '+fmt(p.views)+' visitas';
-  renderDetailComments();
-  document.getElementById('detailModal').classList.remove('hidden');
-  renderPosts();
-}
-function closeDetail(){ document.getElementById('detailModal').classList.add('hidden'); }
-function renderDetailComments(){
-  if(!currentPost) return;
-  const list=postComments(currentPost.id);
-  document.getElementById('dCommentCount').textContent=list.length;
-  document.getElementById('dComments').innerHTML= list.length? list.map(c=>`<div class="flex gap-3 rounded-2xl border border-white/10 p-4"><span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#a855f7] font-bold">${escapeHtml((c.name||'A').slice(0,1).toUpperCase())}</span><div class="min-w-0 flex-1"><div class="flex gap-2 text-sm"><b>${escapeHtml(c.name||'Anónimo')}</b><span class="text-slate-500">${fmtDate(c.created_at)}</span></div><p class="mt-1 break-words text-sm text-slate-300">${escapeHtml(c.text||'')}</p></div>${isAdmin?`<button onclick="deleteComment('${c.id}')" class="text-slate-500 hover:text-red-400 text-sm">🗑</button>`:''}</div>`).join('') : '<p class="text-sm text-slate-500">Sé la primera persona en comentar.</p>';
-}
-async function addComment(){
-  const text=document.getElementById('cText').value.trim();
-  const name=document.getElementById('cName').value.trim()||'Anónimo';
-  if(!text){ showMsg('Escribe un comentario antes de publicar.'); return; }
-  if(!currentPost) return;
-  const {error}=await sb.from('comments').insert([{post_id:currentPost.id, name, text}]);
-  if(error){ showMsg('No se pudo publicar el comentario: '+error.message); return; }
-  document.getElementById('cText').value='';
-  await loadComments(); renderDetailComments(); renderPosts(); showMsg('Comentario publicado.');
-}
-async function deleteComment(id){
-  if(!confirm('¿Eliminar este comentario?')) return;
-  await sb.from('comments').delete().eq('id',id);
-  await loadComments(); renderDetailComments(); renderPosts();
-}
-async function likePost(id){
-  if(likedIds.has(String(id))){ showMsg('Ya le diste like a este post.'); return; }
-  const p=posts.find(x=>String(x.id)===String(id)); if(!p) return;
-  const {error}=await sb.from('posts').update({likes:(p.likes||0)+1}).eq('id',p.id);
-  if(error){ showMsg('No se pudo guardar el like.'); return; }
-  likedIds.add(String(id)); localStorage.setItem('liked_raizer', JSON.stringify([...likedIds]));
-  p.likes=(p.likes||0)+1; if(currentPost && String(currentPost.id)===String(id)){ document.getElementById('dLikes').textContent=fmt(p.likes); }
-  renderPosts();
-}
-document.getElementById('dLike').onclick=()=>{ if(currentPost) likePost(currentPost.id); };
-
-// ADMIN
-function openLogin(){ document.getElementById('loginModal').classList.remove('hidden'); }
-function closeLogin(){ document.getElementById('loginModal').classList.add('hidden'); }
-async function doLogin(){
-  const pass=document.getElementById('loginPass').value;
-  // La contraseña vive solo en Supabase app_settings, nunca en este archivo
-  const {data}=await sb.from('app_settings').select('admin_password').eq('id',1).single();
-  const real = data?.admin_password;
-  if(pass && real && pass===real){
-    isAdmin=true; document.getElementById('loginModal').classList.add('hidden'); document.getElementById('loginPass').value='';
-    document.getElementById('admin').classList.remove('hidden');
-    document.getElementById('adminBadge').classList.remove('hidden'); document.getElementById('adminBadge').classList.add('flex');
-    document.getElementById('btnAcceder').classList.add('hidden'); document.getElementById('btnSalir').classList.remove('hidden');
-    showMsg('Bienvenido, Admin.'); renderPosts();
-    document.getElementById('admin').scrollIntoView({behavior:'smooth'});
-  } else { showMsg('Acceso incorrecto'); }
-}
-function logout(){ isAdmin=false; document.getElementById('admin').classList.add('hidden'); document.getElementById('adminBadge').classList.add('hidden'); document.getElementById('btnAcceder').classList.remove('hidden'); document.getElementById('btnSalir').classList.add('hidden'); showMsg('Sesión de admin cerrada.'); renderPosts(); }
-function clearForm(){ editingId=null; ['fTitle','fGame','fCover','fDesc','fVideo','fDownload'].forEach(id=>document.getElementById(id).value=''); document.getElementById('fPlatform').value='YouTube'; document.getElementById('btnSave').textContent='Guardar'; document.getElementById('btnCancelEdit').classList.add('hidden'); }
-function editPost(id){
-  const p=posts.find(x=>String(x.id)===String(id)); if(!p) return;
-  editingId=p.id;
-  document.getElementById('fTitle').value=p.title||''; document.getElementById('fGame').value=p.game||''; document.getElementById('fPlatform').value=p.platform||'YouTube'; document.getElementById('fCover').value=p.cover||''; document.getElementById('fDesc').value=p.long_desc||p.short_desc||''; document.getElementById('fVideo').value=p.video_url||''; document.getElementById('fDownload').value=(p.downloads&&p.downloads[0]?.url)||'';
-  document.getElementById('btnSave').textContent='Guardar cambios'; document.getElementById('btnCancelEdit').classList.remove('hidden');
-  document.getElementById('admin').scrollIntoView({behavior:'smooth'});
-}
+async function likePost(id,current){let key='liked_'+id;if(localStorage.getItem(key)){alert('Ya le diste like a este post');return;}await supabaseClient.from('posts').update({likes:current+1}).eq('id',id);localStorage.setItem(key,'1');loadAll();}
+async function toggleComments(id){let el=document.getElementById('c-'+id);el.classList.toggle('open');if(el.classList.contains('open')){let {data}=await supabaseClient.from('comments').select('*').eq('post_id',id).order('created_at',{ascending:false});document.getElementById('list-'+id).innerHTML=(data||[]).map(c=>`<div class="comment"><b>${c.nombre||'Anónimo'}</b><br>${c.texto}</div>`).join('')||'<p style="color:#888;font-size:13px">Se el primero en comentar.</p>';}}
+async function sendComment(post_id){let nombre=document.getElementById('n-'+post_id).value||'Anónimo';let texto=document.getElementById('t-'+post_id).value.trim();if(!texto)return alert('Escribe un comentario');await supabaseClient.from('comments').insert([{post_id,nombre,texto}]);document.getElementById('t-'+post_id).value='';toggleComments(post_id);toggleComments(post_id);}
 async function savePost(){
-  const title=document.getElementById('fTitle').value.trim();
-  const game=document.getElementById('fGame').value.trim();
-  const desc=document.getElementById('fDesc').value.trim();
-  if(!title||!game){ showMsg('El título y el juego son obligatorios.'); return; }
-  if(!desc){ showMsg('Escribe una descripción.'); return; }
-  const btn=document.getElementById('btnSave'); btn.disabled=true; btn.textContent='Guardando…';
-  const payload={ title, game, platform:document.getElementById('fPlatform').value, category:'Juego', cover:document.getElementById('fCover').value.trim(), short_desc:desc, long_desc:desc, video_url:document.getElementById('fVideo').value.trim(), downloads: document.getElementById('fDownload').value.trim()? [{label:'Descargar juego', url: document.getElementById('fDownload').value.trim()}] : [], steps:['Abre el enlace de descarga.','Sigue las instrucciones del sitio oficial.','Instala y abre el juego o programa.'], req_min:'', req_rec:'', tags:[] };
-  let error=null;
-  if(editingId){ const r=await sb.from('posts').update(payload).eq('id',editingId); error=r.error; }
-  else { const r=await sb.from('posts').insert([payload]); error=r.error; }
-  btn.disabled=false; btn.textContent=editingId?'Guardar cambios':'Guardar';
-  if(error){ showMsg('No se pudo guardar el post: '+error.message+' — Revisa RLS en Supabase (debe permitir INSERT/UPDATE para anon).'); return; }
-  await loadPosts(); clearForm(); renderPosts(); showMsg(editingId?'Post actualizado.':'Post publicado.');
+let titulo=document.getElementById('fTitulo').value.trim();if(!titulo)return alert('Pon un titulo');
+let payload={titulo,juego:document.getElementById('fJuego').value,plataforma:document.getElementById('fPlataforma').value,descripcion:document.getElementById('fDesc').value,video_url:document.getElementById('fVideo').value,descarga_url:document.getElementById('fDescarga').value,imagen_url:document.getElementById('fImagen').value,likes:0};
+let {data:ins, error}=await supabaseClient.from('posts').insert([payload]).select();if(error){ alert('No se pudo guardar: '+error.message+' (code '+ (error.code||'') +') — Ejecuta supabase.sql en Supabase para agregar las columnas que faltan.'); document.getElementById('adminMsg').textContent='❌ '+error.message; return; }else{document.getElementById('adminMsg').textContent='✅ Post guardado';['fTitulo','fJuego','fDesc','fVideo','fDescarga','fImagen'].forEach(id=>document.getElementById(id).value='');loadAll();renderAdminList();}
 }
-async function deletePost(id){
-  if(!confirm('¿Eliminar este post y sus comentarios?')) return;
-  await sb.from('comments').delete().eq('post_id',id);
-  const {error}=await sb.from('posts').delete().eq('id',id);
-  if(error){ showMsg('No se pudo eliminar: '+error.message); return; }
-  if(currentPost && String(currentPost.id)===String(id)) closeDetail();
-  await loadPosts(); renderPosts(); showMsg('Post eliminado.');
-}
-function renderAdminList(){
-  const el=document.getElementById('adminList'); if(!el) return;
-  document.getElementById('adminCount').textContent=posts.length;
-  el.innerHTML= posts.length? posts.map(p=>`<div class="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3"><span class="rounded-full px-2.5 py-1 text-[11px] font-black ${platClass(p.platform)}">${p.platform}</span><span class="min-w-0 flex-1"><span class="block truncate text-sm font-bold">${escapeHtml(p.title)}</span><span class="text-xs text-slate-400">${escapeHtml(p.game)}</span></span><button onclick="editPost('${p.id}')" class="rounded-full bg-[#a855f7] px-3 py-2 text-xs font-bold">Editar</button><button onclick="deletePost('${p.id}')" class="rounded-full bg-red-500/20 px-3 py-2 text-xs font-bold text-red-300">Eliminar</button></div>`).join('') : '<p class="text-sm text-slate-500">Todavía no hay posts.</p>';
-}
-document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
-init();
+function renderAdminList(){document.getElementById('adminList').innerHTML=allPosts.map(p=>`<div class="post-item"><span>🎮 ${p.titulo} • ${p.plataforma}</span><button class="small" onclick="deletePost('${p.id}')">Eliminar</button></div>`).join('')||'Sin posts';}
+async function deletePost(id){if(!confirm('¿Eliminar este post?'))return;await supabaseClient.from('posts').delete().eq('id',id);loadAll();renderAdminList();}
 </script>
 </body>
 </html>
