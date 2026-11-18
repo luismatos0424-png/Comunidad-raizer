@@ -106,8 +106,9 @@ function fmtDate(d){ return new Date(d).toLocaleDateString('es-ES',{day:'numeric
 function platClass(p){ return p==='YouTube'?'bg-red-600 text-white':p==='TikTok'?'bg-white text-black':p==='Kick'?'bg-[#00ff88] text-black':'bg-[#a855f7] text-white'; }
 
 async function init(){
-  const url = window.SUPABASE_URL || window.SUPABASE_PROJECT_URL;
-  const key = window.SUPABASE_ANON_KEY || window.SUPABASE_KEY || window.SUPABASE_PUBLISHABLE_KEY;
+  // CORREGIDO: config.js usa const, que NO crea window.SUPABASE_URL. Leemos ambas formas.
+  const url = (typeof SUPABASE_URL !== 'undefined' ? SUPABASE_URL : null) || window.SUPABASE_URL || window.SUPABASE_PROJECT_URL;
+  const key = (typeof SUPABASE_ANON_KEY !== 'undefined' ? SUPABASE_ANON_KEY : null) || (typeof SUPABASE_PUBLISHABLE_KEY !== 'undefined' ? SUPABASE_PUBLISHABLE_KEY : null) || window.SUPABASE_ANON_KEY || window.SUPABASE_KEY || window.SUPABASE_PUBLISHABLE_KEY;
   if(!url || !key || url.includes('/rest/v1/')){ showMsg('Error en config.js: la URL no debe terminar en /rest/v1/ y la llave debe ser la publishable/anon. Revisa config.js en GitHub y vuelve a desplegar.'); document.getElementById('loading').textContent='Revisa config.js'; return; }
   sb = supabase.createClient(url, key);
   await loadSettings();

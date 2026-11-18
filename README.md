@@ -1,64 +1,41 @@
-# ELRAIZERCOMMUNITY - ZIP para GitHub + Vercel + Supabase
+# Elraizercommunity - CORREGIDO
 
-## Qué hay en este ZIP
-- `index.html` -> tu web completa (Bienvenidos a mi comunidad, botón Acceder, editor pro, likes, comentarios, contador de visitas, publicidad)
-- `config.js` -> aquí pegas tu URL y KEY de Supabase
-- `supabase.sql` -> crea las tablas y los posts de ejemplo
-- `README.md` -> esta guía
+## Que estaba mal en tus archivos (ya corregido en este ZIP)
 
-## 1. ¿Tengo que hacer algo en Supabase? SÍ, solo 5 minutos, una sola vez
+1. **config.js usaba `const` pero index.html leia `window.SUPABASE_URL`**
+   En el navegador, `const` NO crea `window.SUPABASE_URL`, por eso `init()` pensaba que no habia configuracion y fallaba.
+   CORREGIDO: ahora config.js usa `window.SUPABASE_URL = ...` y tambien `var`, y index.html lee ambas formas.
 
-Supabase es la base de datos que guarda todo: posts, comentarios, likes, visitas, publicidad. Sin esto, en GitHub/Vercel la web quedaría en modo demo y no guardaría nada.
+2. **supabase.sql tenia columnas en ESPAÑOL pero index.html pedia columnas en INGLES**
+   - SQL tenia: titulo, juego, portada, descripcion_corta, enlaces, pasos, visitas, nombre, texto, ad_top, total_visitas...
+   - index.html pedia: title, game, cover, short_desc, downloads, steps, views, name, text, socials, ads, total_visits...
+   Por eso Supabase respondia "column does not exist" y salia "No se pudo guardar el post" / "No se pudo conectar".
+   CORREGIDO: supabase.sql ahora crea todo en INGLES, igual que index.html.
 
-### Paso a paso Supabase
+## Que hay en este ZIP
+- `index.html` = tu web con el parche de lectura de config.js
+- `config.js` = MISMO URL y MISMA llave que ya tenias, pero ahora con `window.` para que si funcione
+- `supabase.sql` = tablas CORREGIDAS en ingles + politicas RLS + 3 posts de ejemplo
+- `README.md` = esta guia
 
-1. Entra a **https://supabase.com** > **Start your project** > Crea cuenta gratis con Google/GitHub
-2. **New Project**
-   - Name: `elraizercommunity`
-   - Database Password: inventa una y guárdala
-   - Region: elige `South America (Sao Paulo)` que es la más cerca a Colombia
-   - Dale **Create project** y espera 1-2 min
-3. En el menú izquierdo ve a **SQL Editor** > **New Query**
-   - Abre el archivo `supabase.sql` de este ZIP, copia TODO y pégalo ahí
-   - Dale **Run**. Debe decir Success. Esto crea `posts`, `comments`, `app_settings` y 3 posts de ejemplo.
-4. Ve a **Table Editor** > `app_settings` > abre la fila `id = 1`
-   - En la columna `admin_password` pon TU contraseña maestra (la que solo tú sabes)
-   - En `youtube`, `tiktok`, `kick` pon tus links
-   - Dale Save. **IMPORTANTE: No pongas tu contraseña en ningún archivo de GitHub, solo aquí en Supabase.**
-5. Ve a **Project Settings (⚙️ abajo) > API**
-   - Copia **Project URL** -> ej: `https://abcd1234.supabase.co`
-   - Copia **anon public key** -> es la clave larga que empieza por `eyJ...`
-6. Abre `config.js` de este ZIP y pega esos 2 datos donde dice `TU_SUPABASE_URL_AQUI` y `TU_ANON_KEY_AQUI`. Guarda.
+## Pasos (en este orden, importante)
 
-Listo. Ya tienes base de datos activa.
+1. En Supabase > SQL Editor > New Query > pega TODO `supabase.sql` de este ZIP > Run.
+   Debe decir Success. Esto BORRA las tablas viejas en español y las crea bien en ingles.
+   Si ya tenias posts importantes que quieres conservar, NO lo ejecutes y avisame para hacerte migracion.
 
-## 2. Subir a GitHub
+2. En Supabase > Table Editor > app_settings > id=1 > pon tu contraseña en `admin_password` > Save.
+   No la pongas en GitHub.
 
-1. En GitHub > **New repository** > Nombre: `elraizercommunity` > **Public** > Create
-2. Dale **Upload files** > Arrastra los 4 archivos del ZIP: `index.html`, `config.js`, `supabase.sql`, `README.md`
-3. **Commit changes**
+3. En GitHub, reemplaza los 3 archivos: `index.html`, `config.js`, `supabase.sql` por los de este ZIP.
+   Haz Commit.
 
-## 3. Publicar en Vercel
+4. Espera que Vercel redepliegue solo. Abre tu web con Ctrl + Shift + R.
 
-1. Entra a **https://vercel.com** > **Add New > Project** > **Import Git Repository**
-2. Elige `elraizercommunity` > **Deploy**
-3. Te dará un link tipo `https://elraizercommunity.vercel.app` - esa ya es tu web oficial.
-
-## 4. Cómo usarla ya publicada
-
-- Visitantes: ven posts, dan like, comentan con nombre o como Anónimo
-- Tú: botón **Acceder** > pones tu contraseña maestra (la que pusiste en Supabase)
-- En Admin: **+ Nuevo Post** -> título, juego, portada por enlace o desde PC, stickers 🎮🔥, negrita, títulos, enlaces de descarga, pasos de instalación, requisitos
-- **Publicidad / Ajustes**: pega ahí tu código de AdSense (banner superior e in-feed) y tus redes. Se guarda en Supabase.
-- Cada post, comentario, like, visita y archivo compartido queda guardado en Supabase, no se borra al recargar.
+5. Prueba: Acceder con tu contraseña > Crear post > Guardar. Ya debe decir "Post publicado." y aparecer en la lista.
+   Si aun falla, abre F12 > Console y copiame el error exacto, que ahora si dira el motivo real.
 
 ## Si algo falla
-
-- Si ves "Modo demo": es que `config.js` aún tiene los textos `TU_SUPABASE...` sin reemplazar.
-- Si no te deja entrar: revisa que en Supabase `app_settings > admin_password` sí tenga tu contraseña, sin espacios.
-- Si no cargan posts: revisa que corriste `supabase.sql` completo y que en **Authentication > Policies** no bloqueaste nada.
-
-## Seguridad
-
-- Nunca subas tu contraseña maestra a GitHub, ni en `config.js`, ni en `index.html`.
-- La `anon key` sí es pública y es la que va en `config.js`, esa no es tu contraseña.
+- Si ves "Error en config.js": revisa que en GitHub config.js si sea el nuevo con `window.`
+- Si ves "column does not exist": es que no ejecutaste el nuevo supabase.sql completo.
+- Si ves RLS / row-level security: es que no se crearon las politicas, vuelve a ejecutar supabase.sql.
