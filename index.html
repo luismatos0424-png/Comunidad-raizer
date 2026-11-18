@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELRAIZERCOMMUNITY</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Arial;background:#0a0a12;color:#fff}
+a{color:#00ff88} header{position:sticky;top:0;z-index:10;background:#0f0f1a;border-bottom:1px solid #222;display:flex;align-items:center;gap:12px;padding:12px 16px;flex-wrap:wrap}
+.logo{font-weight:900;font-size:22px} .logo span{color:#00ff88} .logo small{color:#a855f7}
+input,textarea,select{background:#1a1a2e;color:#fff;border:1px solid #333;border-radius:10px;padding:10px;width:100%}
+button{background:#00ff88;color:#000;border:0;padding:10px 16px;border-radius:999px;font-weight:800;cursor:pointer}
+button.ghost{background:#222;color:#fff} button.purple{background:#a855f7;color:#fff}
+.hero{padding:48px 16px;text-align:center;background:radial-gradient(600px 200px at 50% 0%, #a855f733, transparent)}
+.hero h1{font-size:42px;margin:0} .hero p{color:#bbb;max-width:650px;margin:12px auto}
+.badge{display:inline-block;background:#222;border:1px solid #333;padding:4px 10px;border-radius:999px;font-size:12px;margin:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:16px;max-width:1200px;margin:auto}
+.card{background:#141422;border:1px solid #2a2a3d;border-radius:16px;overflow:hidden}
+.card img{width:100%;height:180px;object-fit:cover} .card .pad{padding:14px}
+.ad{background:#1a1a00;border:1px dashed #ffcc00;border-radius:12px;padding:16px;text-align:center;color:#ffcc00;margin:16px auto;max-width:900px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;overflow:auto;padding:16px} .modal.open{display:block}
+.box{background:#121222;max-width:900px;margin:20px auto;padding:20px;border-radius:16px;border:1px solid #333}
+.comment{background:#1c1c2e;padding:10px;border-radius:10px;margin:8px 0}
+.topbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:0 16px}
+.db{display:flex;gap:8px;align-items:center;font-size:13px;color:#00ff88} .dot{width:10px;height:10px;background:#00ff88;border-radius:50%;display:inline-block}
+label{font-size:13px;color:#bbb;display:block;margin:12px 0 4px}
+.stickers span{font-size:24px;cursor:pointer;padding:4px} .flex{display:flex;gap:8px;flex-wrap:wrap}
+footer{padding:24px;text-align:center;color:#888;border-top:1px solid #222;margin-top:20px}
+</style>
+</head>
+<body>
+<header>
+<div class="logo">ELRAIZER<span>COMMUNITY</span> <small>🎮</small></div>
+<div style="flex:1"></div>
+<div class="db"><span class="dot"></span> <span id="dbStatus">Base de datos activa</span> • 👁 <span id="totalVisitas">0</span> visitas</div>
+<button onclick="openAdminLogin()">Acceder</button>
+</header>
+
+<div class="hero">
+<h1>Bienvenidos a mi comunidad</h1>
+<p>Descarga, instala y juega los mismos juegos y programas que uso en mis videos y directos de YouTube, TikTok y Kick.</p>
+<div class="flex" style="justify-content:center"><button onclick="scrollToPosts()">Ver Juegos</button><button class="ghost" onclick="document.getElementById('como').scrollIntoView()">Cómo funciona</button></div>
+<div style="margin-top:14px"><span class="badge" id="statPosts">0 posts</span><span class="badge" id="statLikes">0 likes</span><span class="badge">Guardado automático ✓</span></div>
+</div>
+
+<div id="adTop" class="ad">ESPACIO PUBLICITARIO - Banner Superior<br><small>Configúralo en Acceder &gt; Publicidad</small></div>
+
+<div class="topbar">
+<input id="buscador" placeholder="🔍 Buscar juego, programa..." style="max-width:340px" oninput="render()">
+<select id="filtroPlata" style="max-width:180px" onchange="render()"><option value="">Todas las plataformas</option><option>YouTube</option><option>TikTok</option><option>Kick</option></select>
+<select id="filtroCat" style="max-width:180px" onchange="render()"><option value="">Todas las categorías</option><option>Juego</option><option>Programa</option><option>Mod</option><option>Tutorial</option></select>
+</div>
+
+<div id="posts" class="grid"></div>
+<div id="adFeed" class="ad">ANUNCIO IN-FEED<br><small>Configúralo en Acceder &gt; Publicidad</small></div>
+
+<div class="box" id="como">
+<h2>Cómo funciona</h2>
+<p>1. Elige un post • 2. Mira el video • 3. Sigue los pasos de instalación • 4. Descarga desde los enlaces oficiales • 5. Comenta y dale like. Solo usamos enlaces, no subimos archivos pesados.</p>
+<p><b>Mis redes:</b> <span id="redes"></span></p>
+</div>
+
+<div id="modalPost" class="modal"><div class="box"><button class="ghost" onclick="closeModal()">✕ Cerrar</button><div id="detalle"></div></div></div>
+<div id="modalAdmin" class="modal"><div class="box"><button class="ghost" onclick="closeModal()">✕ Cerrar</button><div id="adminBox"></div></div></div>
+
+<footer>ELRAIZERCOMMUNITY © 2026 - Hecho por ElRaizer • Solo enlaces oficiales</footer>
+
+<script>
+let supabaseClient=null, isAdmin=false, posts=[], settings={};
+const isConfigured = typeof SUPABASE_URL!=='undefined' && SUPABASE_URL && !SUPABASE_URL.includes('TU_SUPABASE');
+if(isConfigured){
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  document.getElementById('dbStatus').textContent='Base de datos activa • Supabase conectado';
+} else {
+  document.getElementById('dbStatus').textContent='Modo demo - Configura Supabase para activar DB';
+  posts = JSON.parse(localStorage.getItem('elraizer_posts')||'[]');
+  if(!posts.length){ posts=[
+    {id:1,titulo:'Minecraft con Shaders que uso en Directo',juego:'Minecraft',categoria:'Mod',plataforma:'Kick',portada:'https://images.unsplash.com/photo-1587573089734-09cb69c0f2b4?w=900',descripcion_corta:'Los shaders que uso en directo.',descripcion:'Instalación paso a paso.',video_url:'',enlaces:[{texto:'Descargar OptiFine',url:'https://optifine.net/downloads'}],pasos:['Descarga OptiFine','Instala OptiFine','Descarga el shader','Pégalo en shaderpacks'],requisitos:'PC 8GB RAM',tags:'minecraft',visitas:125,likes:32},
+    {id:2,titulo:'GTA V - Mods que uso en YouTube',juego:'GTA V',categoria:'Juego',plataforma:'YouTube',portada:'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=900',descripcion_corta:'Todos los mods de mis videos.',descripcion:'Guía completa.',video_url:'',enlaces:[{texto:'Descargar Script Hook V',url:'https://www.dev-c.com/gtav/scripthookv/'}],pasos:['Descarga Script Hook','Copia a carpeta GTA V'],requisitos:'GTA V original',tags:'gta',visitas:340,likes:89}
+  ]; }
+}
+
+async function load(){
+  if(supabaseClient){
+    let {data:p}=await supabaseClient.from('posts').select('*').order('created_at',{ascending:false});
+    if(p && p.length) posts=p;
+    let {data:s}=await supabaseClient.from('app_settings').select('*').eq('id',1).single();
+    if(s) settings=s;
+    // contador visitas total
+    let total = (settings.total_visitas||0)+1;
+    await supabaseClient.from('app_settings').update({total_visitas:total}).eq('id',1);
+    settings.total_visitas=total;
+  } else {
+    settings={ad_top:'',ad_feed:'',ad_sidebar:'',youtube:'',tiktok:'',kick:'',total_visitas: parseInt(localStorage.getItem('visitas')||'0')+1};
+    localStorage.setItem('visitas', settings.total_visitas);
+  }
+  document.getElementById('totalVisitas').textContent=settings.total_visitas||0;
+  if(settings.ad_top) document.getElementById('adTop').innerHTML=settings.ad_top;
+  if(settings.ad_feed) document.getElementById('adFeed').innerHTML=settings.ad_feed;
+  document.getElementById('redes').innerHTML = `YouTube: ${settings.youtube||'-'} • TikTok: ${settings.tiktok||'-'} • Kick: ${settings.kick||'-'}`;
+  render();
+}
+function scrollToPosts(){document.getElementById('posts').scrollIntoView()}
+function render(){
+  const q=(document.getElementById('buscador').value||'').toLowerCase();
+  const fp=document.getElementById('filtroPlata').value, fc=document.getElementById('filtroCat').value;
+  let list=posts.filter(p=>(!q||(p.titulo+' '+p.juego).toLowerCase().includes(q))&&(!fp||p.plataforma===fp)&&(!fc||p.categoria===fc));
+  document.getElementById('statPosts').textContent=list.length+' posts';
+  document.getElementById('statLikes').textContent=posts.reduce((a,p)=>a+(p.likes||0),0)+' likes';
+  document.getElementById('posts').innerHTML=list.map(p=>`
+    <div class="card">
+      <img src="${p.portada||'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=900'}" onclick="openPost(${p.id})" style="cursor:pointer">
+      <div class="pad"><span class="badge">${p.plataforma||''}</span><span class="badge">${p.categoria||''}</span>
+      ${isAdmin?`<div class="flex"><button onclick="editPost(${p.id})">Editar</button><button class="ghost" onclick="deletePost(${p.id})">Eliminar</button></div>`:''}
+      <h3>${p.titulo}</h3><p style="color:#bbb">${p.descripcion_corta||''}</p>
+      <p>👁 ${p.visitas||0} • ❤️ ${p.likes||0}</p>
+      <button onclick="openPost(${p.id})">Ver Post</button></div>
+    </div>`).join('') || '<p style="text-align:center">No hay posts todavía. Entra como admin y crea el primero.</p>';
+  if(isAdmin && !document.getElementById('btnNuevo')){
+    let b=document.createElement('div'); b.id='btnNuevo'; b.style.textAlign='center'; b.innerHTML='<button onclick="editPost(0)">+ Nuevo Post</button> <button class="purple" onclick="openAds()">Publicidad / Ajustes</button>'; document.getElementById('posts').before(b);
+  }
+}
+async function openPost(id){
+  let p=posts.find(x=>x.id==id); if(!p) return;
+  // sumar visita
+  p.visitas=(p.visitas||0)+1;
+  if(supabaseClient) await supabaseClient.from('posts').update({visitas:p.visitas}).eq('id',id);
+  else localStorage.setItem('elraizer_posts',JSON.stringify(posts));
+  let comments=[];
+  if(supabaseClient){ let {data}=await supabaseClient.from('comments').select('*').eq('post_id',id).order('created_at',{ascending:false}); comments=data||[]; }
+  else { comments=JSON.parse(localStorage.getItem('comments_'+id)||'[]'); }
+  let enlaces=(p.enlaces||[]).map(e=>`<a href="${e.url}" target="_blank"><button style="margin:4px">⬇ ${e.texto}</button></a>`).join('');
+  let pasos=(p.pasos||[]).map((s,i)=>`<li>${s}</li>`).join('');
+  document.getElementById('detalle').innerHTML=`
+    <img src="${p.portada||''}" style="width:100%;border-radius:12px;max-height:320px;object-fit:cover">
+    <h2>${p.titulo}</h2><p><span class="badge">${p.plataforma}</span><span class="badge">${p.categoria}</span><span class="badge">${p.juego}</span></p>
+    <p>${p.descripcion||''}</p>
+    ${p.video_url?`<p><a href="${p.video_url}" target="_blank">▶ Ver video en ${p.plataforma}</a></p>`:''}
+    <h3>⬇ Enlaces de descarga</h3><div>${enlaces||'Sin enlaces todavía'}</div>
+    <h3>🛠 Cómo instalar paso a paso</h3><ol>${pasos}</ol>
+    <p><b>Requisitos:</b> ${p.requisitos||''}</p><p><b>Tags:</b> ${p.tags||''}</p>
+    <div class="flex"><button onclick="likePost(${p.id})">❤️ Me gusta (${p.likes||0})</button></div>
+    <h3>💬 Comentarios (${comments.length})</h3>
+    <input id="cNombre" placeholder="Tu nombre (opcional, si lo dejas vacío sale Anónimo)">
+    <textarea id="cTexto" placeholder="Escribe tu comentario..."></textarea>
+    <button onclick="addComment(${p.id})">Publicar comentario</button>
+    <div>${comments.map(c=>`<div class="comment"><b>${c.nombre||'Anónimo'}</b> • ${new Date(c.created_at||Date.now()).toLocaleString()}<br>${c.texto}</div>`).join('')}</div>
+  `;
+  document.getElementById('modalPost').classList.add('open');
+}
+function closeModal(){document.querySelectorAll('.modal').forEach(m=>m.classList.remove('open'))}
+async function likePost(id){
+  let p=posts.find(x=>x.id==id); p.likes=(p.likes||0)+1;
+  if(supabaseClient) await supabaseClient.from('posts').update({likes:p.likes}).eq('id',id);
+  else localStorage.setItem('elraizer_posts',JSON.stringify(posts));
+  alert('Guardado en la base de datos ✓'); render(); openPost(id);
+}
+async function addComment(post_id){
+  let nombre=document.getElementById('cNombre').value.trim()||'Anónimo';
+  let texto=document.getElementById('cTexto').value.trim(); if(!texto) return alert('Escribe un comentario');
+  if(supabaseClient) await supabaseClient.from('comments').insert({post_id,nombre,texto});
+  else { let arr=JSON.parse(localStorage.getItem('comments_'+post_id)||'[]'); arr.unshift({nombre,texto,created_at:new Date().toISOString()}); localStorage.setItem('comments_'+post_id,JSON.stringify(arr)); }
+  alert('Comentario guardado ✓'); openPost(post_id);
+}
+function openAdminLogin(){
+  if(isAdmin){ openAdminPanel(); return; }
+  document.getElementById('adminBox').innerHTML=`<h2>Acceder</h2><p style="color:#bbb">Solo el administrador puede entrar.</p><label>Contraseña</label><input type="password" id="passInput" placeholder="Contraseña"><br><br><button onclick="checkAdmin()">Entrar</button><p id="loginError" style="color:#ff5555"></p>`;
+  document.getElementById('modalAdmin').classList.add('open');
+}
+async function checkAdmin(){
+  let pass=document.getElementById('passInput').value;
+  let ok=false;
+  if(supabaseClient){
+    let {data}=await supabaseClient.from('app_settings').select('admin_password').eq('id',1).single();
+    if(data && data.admin_password && pass===data.admin_password) ok=true;
+    if(!data?.admin_password) document.getElementById('loginError').textContent='Aún no hay contraseña en Supabase. Ve a Table Editor > app_settings > admin_password y pon tu contraseña.';
+  } else {
+    // modo demo: la contraseña se configura en Supabase, en demo pide configurarlo
+    document.getElementById('loginError').textContent='Configura Supabase primero para activar el acceso.';
+    return;
+  }
+  if(ok){ isAdmin=true; alert('Bienvenido, admin ✓'); closeModal(); render(); openAdminPanel(); }
+  else document.getElementById('loginError').textContent='Acceso incorrecto';
+}
+function openAdminPanel(){
+  document.getElementById('adminBox').innerHTML=`<h2>Panel Admin</h2><p>🟢 Base de datos activa • Guardado automático</p><p>Posts: ${posts.length} • Visitas totales: ${settings.total_visitas||0}</p><div class="flex"><button onclick="editPost(0)">+ Nuevo Post</button><button class="purple" onclick="openAds()">Publicidad / Ajustes</button><button class="ghost" onclick="logoutAdmin()">Salir</button></div>`;
+  document.getElementById('modalAdmin').classList.add('open');
+}
+function logoutAdmin(){ isAdmin=false; location.reload(); }
+function openAds(){
+  document.getElementById('adminBox').innerHTML=`<h2>Publicidad y Ajustes</h2>
+  <label>Código Banner Superior (AdSense / HTML)</label><textarea id="adTopIn" rows="3">${settings.ad_top||''}</textarea>
+  <label>Código Anuncio In-Feed</label><textarea id="adFeedIn" rows="3">${settings.ad_feed||''}</textarea>
+  <label>YouTube</label><input id="ytIn" value="${settings.youtube||''}">
+  <label>TikTok</label><input id="ttIn" value="${settings.tiktok||''}">
+  <label>Kick</label><input id="kickIn" value="${settings.kick||''}">
+  <button onclick="saveAds()">Guardar en base de datos ✓</button>`;
+  document.getElementById('modalAdmin').classList.add('open');
+}
+async function saveAds(){
+  let upd={ad_top:document.getElementById('adTopIn').value, ad_feed:document.getElementById('adFeedIn').value, youtube:document.getElementById('ytIn').value, tiktok:document.getElementById('ttIn').value, kick:document.getElementById('kickIn').value};
+  if(supabaseClient) await supabaseClient.from('app_settings').update(upd).eq('id',1);
+  settings={...settings,...upd}; alert('Guardado en la base de datos ✓'); location.reload();
+}
+function editPost(id){
+  let p=posts.find(x=>x.id==id)||{titulo:'',juego:'',categoria:'Juego',plataforma:'YouTube',portada:'',descripcion_corta:'',descripcion:'',video_url:'',enlaces:[],pasos:[],requisitos:'',tags:''};
+  document.getElementById('adminBox').innerHTML=`
+  <h2>${id?'Editar Post':'Nuevo Post'}</h2>
+  <label>Título</label><input id="fTitulo" value="${p.titulo||''}">
+  <label>Juego / Programa</label><input id="fJuego" value="${p.juego||''}">
+  <div class="flex"><div style="flex:1"><label>Categoría</label><select id="fCat"><option>Juego</option><option>Programa</option><option>Mod</option><option>Tutorial</option></select></div><div style="flex:1"><label>Plataforma</label><select id="fPlat"><option>YouTube</option><option>TikTok</option><option>Kick</option></select></div></div>
+  <label>Portada - por enlace</label><input id="fPortada" value="${p.portada||''}" placeholder="https://...">
+  <label>Portada - desde tu PC</label><input type="file" id="fFile" accept="image/*" onchange="previewFile(this)">
+  <img id="previewImg" src="${p.portada||''}" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-top:8px">
+  <label>Descripción corta</label><input id="fCorta" value="${p.descripcion_corta||''}">
+  <label>Descripción larga - usa los botones</label>
+  <div class="flex"><button type="button" class="ghost" onclick="insertTag('**')">Negrita</button><button type="button" class="ghost" onclick="insertTag('## ')">Título H2</button><button type="button" class="ghost" onclick="insertTag('- ')">Lista</button></div>
+  <div class="stickers"><span onclick="addSticker('🎮')">🎮</span><span onclick="addSticker('🔥')">🔥</span><span onclick="addSticker('💥')">💥</span><span onclick="addSticker('👾')">👾</span><span onclick="addSticker('🏆')">🏆</span><span onclick="addSticker('🎯')">🎯</span><span onclick="addSticker('⚡')">⚡</span><span onclick="addSticker('❤️')">❤️</span></div>
+  <textarea id="fDesc" rows="5">${p.descripcion||''}</textarea>
+  <label>Link del video</label><input id="fVideo" value="${p.video_url||''}">
+  <label>Enlaces de descarga (uno por línea: Texto | URL)</label><textarea id="fEnlaces" rows="3">${(p.enlaces||[]).map(e=>e.texto+' | '+e.url).join('\n')}</textarea>
+  <label>Pasos de instalación (uno por línea)</label><textarea id="fPasos" rows="4">${(p.pasos||[]).join('\n')}</textarea>
+  <label>Requisitos</label><input id="fReq" value="${p.requisitos||''}">
+  <label>Tags</label><input id="fTags" value="${p.tags||''}">
+  <br><button onclick="savePost(${id})">Guardar en base de datos ✓</button>
+  `;
+  document.getElementById('fCat').value=p.categoria||'Juego'; document.getElementById('fPlat').value=p.plataforma||'YouTube';
+  document.getElementById('modalAdmin').classList.add('open');
+}
+function insertTag(t){ let el=document.getElementById('fDesc'); el.value+=t; }
+function addSticker(s){ let el=document.getElementById('fDesc'); el.value+=s; }
+function previewFile(inp){ let r=new FileReader(); r.onload=e=>{document.getElementById('previewImg').src=e.target.result; document.getElementById('fPortada').value=e.target.result;}; r.readAsDataURL(inp.files[0]); }
+async function savePost(id){
+  let enlaces=document.getElementById('fEnlaces').value.split('\n').filter(Boolean).map(l=>{let [texto,url]=l.split('|'); return {texto:(texto||'Descargar').trim(), url:(url||'').trim()}});
+  let obj={titulo:document.getElementById('fTitulo').value, juego:document.getElementById('fJuego').value, categoria:document.getElementById('fCat').value, plataforma:document.getElementById('fPlat').value, portada:document.getElementById('fPortada').value, descripcion_corta:document.getElementById('fCorta').value, descripcion:document.getElementById('fDesc').value, video_url:document.getElementById('fVideo').value, enlaces, pasos:document.getElementById('fPasos').value.split('\n').filter(Boolean), requisitos:document.getElementById('fReq').value, tags:document.getElementById('fTags').value};
+  if(supabaseClient){
+    if(id) await supabaseClient.from('posts').update(obj).eq('id',id);
+    else await supabaseClient.from('posts').insert(obj);
+  } else { if(id){ let i=posts.findIndex(x=>x.id==id); posts[i]={...posts[i],...obj}; } else { obj.id=Date.now(); posts.unshift(obj); } localStorage.setItem('elraizer_posts',JSON.stringify(posts)); }
+  alert('Guardado en la base de datos ✓'); closeModal(); load();
+}
+async function deletePost(id){
+  if(!confirm('¿Eliminar este post?')) return;
+  if(supabaseClient) await supabaseClient.from('posts').delete().eq('id',id);
+  else { posts=posts.filter(p=>p.id!=id); localStorage.setItem('elraizer_posts',JSON.stringify(posts)); }
+  load();
+}
+load();
+</script>
+</body>
+</html>
