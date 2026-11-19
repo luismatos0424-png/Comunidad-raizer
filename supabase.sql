@@ -136,3 +136,18 @@ alter table app_settings disable row level security;
 -- VERIFICACIÓN (corre estas 2 después de Run):
 -- select count(*) as total_posts from posts;
 -- select id, titulo, title, juego, game from posts order by created_at desc limit 5;
+
+
+-- === CONTROL DE ANUNCIOS - NUEVO ===
+-- Agrega columna ads a app_settings para guardar los 3 anuncios (top, feed, sidebar) como JSON texto.
+-- Si ya existía como jsonb, la convierte a texto para que el index nuevo no falle por tipo.
+alter table app_settings add column if not exists ads text;
+alter table app_settings add column if not exists socials text;
+
+do $$ begin
+  begin alter table app_settings alter column ads type text using ads::text; exception when others then null; end;
+  begin alter table app_settings alter column socials type text using socials::text; exception when others then null; end;
+end $$;
+
+-- Si app_settings no tiene ads, poner uno vacío por defecto
+update app_settings set ads = '{"top":{"activo":false,"imagen":"","link":"","codigo":""},"feed":{"activo":false,"imagen":"","link":"","codigo":""},"sidebar":{"activo":false,"imagen":"","link":"","codigo":""}}' where id = 1 and (ads is null or ads = '');
