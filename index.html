@@ -367,17 +367,19 @@ async function testConexion(){
 }
 async function runDiagnostico(){ document.getElementById('loadMsg').style.display='block'; document.getElementById('loadMsg').textContent='Diagnosticando...'; await loadAll(); }
 
+function getF(p, es, en){ return p[es] ?? p[en] ?? ''; }
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function badgeClass(p){ if(p==='YouTube') return 'bg-[#FF0000] text-white shadow-[0_8px_24px_rgba(255,0,0,.35)]'; if(p==='TikTok') return 'bg-white text-black shadow-[0_8px_24px_rgba(255,255,255,.18)]'; if(p==='Kick') return 'bg-[#00FF88] text-black shadow-[0_8px_24px_rgba(0,255,136,.35)]'; return 'bg-[#A855F7] text-white'; }
 function coverGrad(p){ if(p==='YouTube') return 'cover-grad-YouTube'; if(p==='TikTok') return 'cover-grad-TikTok'; if(p==='Kick') return 'cover-grad-Kick'; return 'cover-grad-Juegos'; }
 function coverColor(p){ if(p==='Kick') return '#00FF88'; if(p==='YouTube') return '#FF4D4D'; return '#A855F7'; }
-function getCover(p){ return p.imagen_url || p.portada || ''; }
-function getShort(p){ return p.descripcion_corta || p.descripcion || ''; }
-function getLong(p){ return p.descripcion || p.descripcion_corta || ''; }
+function getDescarga(p){ let v = getF(p,'descarga_url','downloads')||''; v = String(v); if(v.trim().startsWith('[{')){ try{ let a=JSON.parse(v); if(a[0]&&a[0].url) return a[0].url; }catch(e){} } return v; }
+function getCover(p){ return getF(p,'imagen_url','cover') || p.portada || ''; }
+function getShort(p){ return getF(p,'descripcion_corta','short_desc') || getF(p,'descripcion','long_desc') || ''; }
+function getLong(p){ return getF(p,'descripcion','long_desc') || getF(p,'descripcion_corta','short_desc') || ''; }
 function commentsFor(id){ return allComments.filter(c=>String(c.post_id)===String(id)); }
 
 function render(){
-  let list=allPosts.filter(p=> currentFilter==='Todos' || p.plataforma===currentFilter || (currentFilter==='Juegos' && (p.categoria==='Juego' || p.plataforma==='Juegos')) );
+  let list=allPosts.filter(p=> currentFilter==='Todos' || getF(p,'plataforma','platform')===currentFilter || (currentFilter==='Juegos' && (getF(p,'categoria','category')==='Juego' || getF(p,'plataforma','platform')==='Juegos')) );
   document.getElementById('statPosts').textContent=allPosts.length;
   document.getElementById('statLikes').textContent=allPosts.reduce((s,p)=>s+(p.likes||0),0);
   document.getElementById('empty').classList.toggle('hidden', list.length>0);
@@ -386,14 +388,14 @@ function render(){
     let coverHtml = cover
       ? `<img src="${esc(cover)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.05]">`
       : '';
-    let gradHtml = `<div class="relative flex h-full w-full items-center justify-center overflow-hidden ${coverGrad(p.plataforma)} ${cover?'hidden':''}" style="display:${cover?'none':'flex'}">
+    let gradHtml = `<div class="relative flex h-full w-full items-center justify-center overflow-hidden ${coverGrad(getF(p,'plataforma','platform'))} ${cover?'hidden':''}" style="display:${cover?'none':'flex'}">
       <div class="absolute inset-0 opacity-40" style="background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:28px 28px"></div>
-      <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full blur-2xl" style="background:${coverColor(p.plataforma)};opacity:.35"></div>
+      <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full blur-2xl" style="background:${coverColor(getF(p,'plataforma','platform'))};opacity:.35"></div>
       <div class="absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-[#A855F7] opacity-25 blur-2xl"></div>
       <div class="relative flex flex-col items-center px-4 text-center">
-        <span class="grid h-16 w-16 place-items-center rounded-[20px] border border-white/20 bg-black/40 font-display text-3xl font-black shadow-2xl backdrop-blur sm:h-20 sm:w-20 sm:text-4xl" style="color:${coverColor(p.plataforma)}">${esc((p.juego||'A').trim().slice(0,1).toUpperCase())}</span>
-        <span class="mt-3 font-display font-bold uppercase tracking-[.22em] text-white/90 text-[11px] sm:text-xs">${esc(p.juego||'')}</span>
-        <span class="mt-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/50">🎮 ${esc(p.plataforma||'')}</span>
+        <span class="grid h-16 w-16 place-items-center rounded-[20px] border border-white/20 bg-black/40 font-display text-3xl font-black shadow-2xl backdrop-blur sm:h-20 sm:w-20 sm:text-4xl" style="color:${coverColor(getF(p,'plataforma','platform'))}">${esc((getF(p,'juego','game')||'A').trim().slice(0,1).toUpperCase())}</span>
+        <span class="mt-3 font-display font-bold uppercase tracking-[.22em] text-white/90 text-[11px] sm:text-xs">${esc(getF(p,'juego','game')||'')}</span>
+        <span class="mt-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/50">🎮 ${esc(getF(p,'plataforma','platform')||'')}</span>
       </div>
     </div>`;
     return `
@@ -403,12 +405,12 @@ function render(){
           <div class="h-full w-full transition duration-500 group-hover:scale-[1.05]">
             ${coverHtml}${gradHtml}
           </div>
-          <span class="absolute left-4 top-4 rounded-full px-3 py-1.5 text-[11px] font-black ${badgeClass(p.plataforma)}">${esc(p.plataforma||'YouTube')}</span>
-          <span class="absolute right-4 top-4 rounded-full border border-white/20 bg-black/60 px-3 py-1.5 text-[11px] font-bold backdrop-blur">${esc(p.categoria||'Juego')}</span>
+          <span class="absolute left-4 top-4 rounded-full px-3 py-1.5 text-[11px] font-black ${badgeClass(getF(p,'plataforma','platform'))}">${esc(getF(p,'plataforma','platform')||'YouTube')}</span>
+          <span class="absolute right-4 top-4 rounded-full border border-white/20 bg-black/60 px-3 py-1.5 text-[11px] font-bold backdrop-blur">${esc(getF(p,'categoria','category')||'Juego')}</span>
         </div>
         <div class="p-5 sm:p-6">
-          <p class="text-sm font-bold text-[#00FF88]">${esc(p.juego||'')}</p>
-          <h3 class="mt-2 min-h-[54px] font-display text-[18px] font-bold leading-snug">${esc(p.titulo||'')}</h3>
+          <p class="text-sm font-bold text-[#00FF88]">${esc(getF(p,'juego','game')||'')}</p>
+          <h3 class="mt-2 min-h-[54px] font-display text-[18px] font-bold leading-snug">${esc(getF(p,'titulo','title')||'')}</h3>
           <p class="line-clamp-2 mt-2.5 text-[15px] leading-relaxed text-slate-400">${esc(getShort(p))}</p>
           <div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/[.07] pt-4 text-[13px] text-slate-400">
             <span class="flex items-center gap-1.5">👁️ ${p.visitas||0}</span>
@@ -440,24 +442,24 @@ function openDetail(id){
   let p=allPosts.find(x=>String(x.id)===String(id));
   if(!p) return;
   supabaseClient.from('posts').update({visitas:(p.visitas||0)+1}).eq('id',p.id).then(()=>{ p.visitas=(p.visitas||0)+1; render(); });
-  let pasos=(p.pasos||'').split('\n').filter(s=>s.trim());
+  let pasos=(getF(p,'pasos','steps')||'').split('\n').filter(s=>s.trim());
   let tags=(p.tags||'').split(',').filter(s=>s.trim());
   let cover=getCover(p);
   let coverHtml = cover ? `<img src="${esc(cover)}" class="mt-4 w-full h-[280px] object-cover rounded-[20px]">` : '';
   document.getElementById('detailBox').innerHTML=`
     <div class="flex justify-between items-start gap-3">
-      <div><span class="inline-block rounded-full px-3 py-1.5 text-[11px] font-black ${badgeClass(p.plataforma)}">${esc(p.plataforma)}</span>
-      <h2 class="mt-3 font-display text-2xl font-black leading-tight">${esc(p.titulo)}</h2>
-      <p class="mt-2 text-sm font-bold text-[#00FF88]">${esc(p.juego||'')} • ${new Date(p.created_at).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}</p></div>
+      <div><span class="inline-block rounded-full px-3 py-1.5 text-[11px] font-black ${badgeClass(getF(p,'plataforma','platform'))}">${esc(getF(p,'plataforma','platform'))}</span>
+      <h2 class="mt-3 font-display text-2xl font-black leading-tight">${esc(getF(p,'titulo','title'))}</h2>
+      <p class="mt-2 text-sm font-bold text-[#00FF88]">${esc(getF(p,'juego','game')||'')} • ${new Date(p.created_at).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}</p></div>
       <button onclick="closeDetail()" class="rounded-full border border-white/15 px-4 py-2 font-bold">✕</button>
     </div>
     ${coverHtml}
     <p class="mt-4 leading-relaxed text-slate-300" style="white-space:pre-wrap">${esc(getLong(p))}</p>
-    ${p.video_url?`<div class="mt-8 rounded-[20px] border border-white/10 bg-black/25 p-5"><h3 class="font-display font-bold">▶️ Video</h3><a href="${esc(p.video_url)}" target="_blank" class="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-[#00FF88] px-5 py-3.5 text-sm font-bold text-black transition hover:brightness-110">Ver video en ${esc(p.plataforma)} <span>↗</span></a></div>`:''}
+    ${p.video_url?`<div class="mt-8 rounded-[20px] border border-white/10 bg-black/25 p-5"><h3 class="font-display font-bold">▶️ Video</h3><a href="${esc(p.video_url)}" target="_blank" class="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-[#00FF88] px-5 py-3.5 text-sm font-bold text-black transition hover:brightness-110">Ver video en ${esc(getF(p,'plataforma','platform'))} <span>↗</span></a></div>`:''}
     ${pasos.length?`<div class="mt-8"><h3 class="font-display text-lg font-bold">Cómo instalar paso a paso</h3><ol class="mt-4 space-y-3">${pasos.map((s,i)=>`<li class="flex gap-3.5 rounded-2xl border border-white/10 bg-white/[.03] p-4"><span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#00FF88] font-display font-black text-black">${i+1}</span><span class="pt-1 text-[15px] leading-relaxed text-slate-200">${esc(s)}</span></li>`).join('')}</ol></div>`:''}
-    ${(p.requisitos_min||p.requisitos_rec)?`<div class="mt-8 grid gap-3 sm:grid-cols-2"><div class="rounded-2xl border border-white/10 bg-black/25 p-5"><b>✅ Mínimos</b><p class="mt-2 text-sm text-slate-300">${esc(p.requisitos_min||'No especificado')}</p></div><div class="rounded-2xl border border-white/10 bg-black/25 p-5"><b>🚀 Recomendados</b><p class="mt-2 text-sm text-slate-300">${esc(p.requisitos_rec||'No especificado')}</p></div></div>`:''}
+    ${(getF(p,'requisitos_min','req_min')||getF(p,'requisitos_rec','req_rec'))?`<div class="mt-8 grid gap-3 sm:grid-cols-2"><div class="rounded-2xl border border-white/10 bg-black/25 p-5"><b>✅ Mínimos</b><p class="mt-2 text-sm text-slate-300">${esc(getF(p,'requisitos_min','req_min')||'No especificado')}</p></div><div class="rounded-2xl border border-white/10 bg-black/25 p-5"><b>🚀 Recomendados</b><p class="mt-2 text-sm text-slate-300">${esc(getF(p,'requisitos_rec','req_rec')||'No especificado')}</p></div></div>`:''}
     <div class="mt-8"><h3 class="font-display text-lg font-bold">Enlaces de descarga</h3><div class="mt-4 grid gap-3 sm:grid-cols-2">
-      ${p.descarga_url?`<a href="${esc(p.descarga_url)}" target="_blank" class="flex items-center justify-center gap-2 rounded-full bg-[#00FF88] px-4 py-3 text-sm font-bold text-black transition hover:brightness-110">⬇️ ${esc(p.descarga_label||'Descargar')}</a>`:`<p class="text-sm text-slate-500">Este post todavía no tiene enlace de descarga.</p>`}
+      ${getDescarga(p)?`<a href="${esc(getDescarga(p))}" target="_blank" class="flex items-center justify-center gap-2 rounded-full bg-[#00FF88] px-4 py-3 text-sm font-bold text-black transition hover:brightness-110">⬇️ ${esc(p.descarga_label||'Descargar')}</a>`:`<p class="text-sm text-slate-500">Este post todavía no tiene enlace de descarga.</p>`}
     </div></div>
     ${tags.length?`<div class="mt-6 text-sm text-slate-400">Tags: ${tags.map(t=>`#${esc(t.trim())}`).join(' ')}</div>`:''}
     <div class="mt-8 flex flex-wrap items-center gap-3 border-y border-white/10 py-6">
@@ -481,13 +483,13 @@ function openDetail(id){
 async function loadCommentsDetail(post_id){
   let {data}=await supabaseClient.from('comments').select('*').eq('post_id',post_id).order('created_at',{ascending:false});
   let el=document.getElementById('list-detail-'+post_id);
-  if(el) el.innerHTML=(data||[]).map(c=>`<div class="rounded-2xl border border-white/10 bg-black/25 p-4"><b class="text-sm">${esc(c.nombre||'Anónimo')}</b><p class="mt-1 text-sm text-slate-300">${esc(c.texto)}</p></div>`).join('')||'<p class="text-sm text-slate-500">Sé el primero en comentar.</p>';
+  if(el) el.innerHTML=(data||[]).map(c=>`<div class="rounded-2xl border border-white/10 bg-black/25 p-4"><b class="text-sm">${esc(getF(c,'nombre','name')||'Anónimo')}</b><p class="mt-1 text-sm text-slate-300">${esc(getF(c,'texto','text'))}</p></div>`).join('')||'<p class="text-sm text-slate-500">Sé el primero en comentar.</p>';
 }
 async function sendCommentDetail(post_id){
   let nombre=document.getElementById('n-detail-'+post_id).value||'Anónimo';
   let texto=document.getElementById('t-detail-'+post_id).value.trim();
   if(!texto) return alert('Escribe un comentario antes de publicar.');
-  let {error}=await supabaseClient.from('comments').insert([{post_id,nombre,texto}]);
+  let {error}=await supabaseClient.from('comments').insert([{post_id, nombre, name: nombre, texto, text: texto}]);
   if(error) return alert('No se pudo comentar: '+error.message);
   document.getElementById('t-detail-'+post_id).value='';
   let {data}=await supabaseClient.from('comments').select('*').order('created_at',{ascending:false});
@@ -507,14 +509,14 @@ async function toggleComments(id){
   el.classList.toggle('hidden');
   if(!el.classList.contains('hidden')){
     let {data}=await supabaseClient.from('comments').select('*').eq('post_id',id).order('created_at',{ascending:false});
-    document.getElementById('list-'+id).innerHTML=(data||[]).map(c=>`<div class="rounded-2xl border border-white/10 bg-black/25 p-4"><b class="text-sm">${esc(c.nombre||'Anónimo')}</b><p class="mt-1 text-sm text-slate-300">${esc(c.texto)}</p></div>`).join('')||'<p class="text-sm text-slate-500">Sé el primero en comentar.</p>';
+    document.getElementById('list-'+id).innerHTML=(data||[]).map(c=>`<div class="rounded-2xl border border-white/10 bg-black/25 p-4"><b class="text-sm">${esc(getF(c,'nombre','name')||'Anónimo')}</b><p class="mt-1 text-sm text-slate-300">${esc(getF(c,'texto','text'))}</p></div>`).join('')||'<p class="text-sm text-slate-500">Sé el primero en comentar.</p>';
   }
 }
 async function sendComment(post_id){
   let nombre=document.getElementById('n-'+post_id).value||'Anónimo';
   let texto=document.getElementById('t-'+post_id).value.trim();
   if(!texto) return alert('Escribe un comentario antes de publicar.');
-  let {error}=await supabaseClient.from('comments').insert([{post_id,nombre,texto}]);
+  let {error}=await supabaseClient.from('comments').insert([{post_id, nombre, name: nombre, texto, text: texto}]);
   if(error) return alert('No se pudo comentar: '+error.message);
   document.getElementById('t-'+post_id).value='';
   let {data}=await supabaseClient.from('comments').select('*').order('created_at',{ascending:false});
@@ -525,26 +527,40 @@ async function sendComment(post_id){
 async function savePost(){
   let titulo=document.getElementById('fTitulo').value.trim();
   if(!titulo) return alert('Pon un título');
+  let _juego=document.getElementById('fJuego').value.trim();
+  let _plataforma=document.getElementById('fPlataforma').value;
+  let _categoria=document.getElementById('fCategoria').value;
+  let _descCorta=document.getElementById('fDescCorta').value.trim();
+  let _desc=document.getElementById('fDesc').value.trim();
+  let _video=document.getElementById('fVideo').value.trim();
+  let _descarga=document.getElementById('fDescarga').value.trim();
+  let _descargaLabel=document.getElementById('fDescargaLabel').value.trim()||'Descargar juego';
+  let _imagen=document.getElementById('fImagen').value.trim();
+  let _pasos=document.getElementById('fPasos').value.trim();
+  let _reqMin=document.getElementById('fReqMin').value.trim();
+  let _reqRec=document.getElementById('fReqRec').value.trim();
+  let _tags=document.getElementById('fTags').value.trim();
+  // BILINGÜE: mandamos español + inglés para que nunca falle con "null value in column title"
   let payload={
-    titulo,
-    juego:document.getElementById('fJuego').value.trim(),
-    plataforma:document.getElementById('fPlataforma').value,
-    categoria:document.getElementById('fCategoria').value,
-    descripcion_corta:document.getElementById('fDescCorta').value.trim(),
-    descripcion:document.getElementById('fDesc').value.trim(),
-    video_url:document.getElementById('fVideo').value.trim(),
-    descarga_url:document.getElementById('fDescarga').value.trim(),
-    descarga_label:document.getElementById('fDescargaLabel').value.trim()||'Descargar juego',
-    imagen_url:document.getElementById('fImagen').value.trim(),
-    pasos:document.getElementById('fPasos').value.trim(),
-    requisitos_min:document.getElementById('fReqMin').value.trim(),
-    requisitos_rec:document.getElementById('fReqRec').value.trim(),
-    tags:document.getElementById('fTags').value.trim(),
-    likes:0, visitas:0
+    titulo, title: titulo,
+    juego: _juego, game: _juego,
+    plataforma: _plataforma, platform: _plataforma,
+    categoria: _categoria, category: _categoria,
+    descripcion_corta: _descCorta, short_desc: _descCorta,
+    descripcion: _desc, long_desc: _desc,
+    video_url: _video,
+    descarga_url: _descarga, downloads: _descarga,
+    descarga_label: _descargaLabel,
+    imagen_url: _imagen, cover: _imagen,
+    pasos: _pasos, steps: _pasos,
+    requisitos_min: _reqMin, req_min: _reqMin,
+    requisitos_rec: _reqRec, req_rec: _reqRec,
+    tags: _tags,
+    likes:0, visitas:0, views:0
   };
   let {data,error}=await supabaseClient.from('posts').insert([payload]).select();
   if(error){
-    alert('NO se guardó. Error: '+error.message+' (code '+(error.code||'')+')\n\nEsto es porque falta una columna en Supabase. Corre supabase.sql en SQL Editor y vuelve a intentar.');
+    alert('NO se guardó. Error: '+error.message+' (code '+(error.code||'')+')\n\nSi es 23502 = falta correr el nuevo supabase.sql que quita el NOT NULL de title. Corre el supabase.sql de este ZIP y vuelve a intentar.');
     document.getElementById('adminMsg').textContent='❌ NO se guardó: '+error.message+' - Corre supabase.sql';
     document.getElementById('adminMsg').style.color='#FF8080';
     return;
@@ -555,7 +571,7 @@ async function savePost(){
   await loadAll();
 }
 function renderAdminList(){
-  document.getElementById('adminList').innerHTML=allPosts.map(p=>`<div class="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5"><span class="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold">${esc(p.categoria||'Juego')}</span><span class="min-w-0 flex-1 truncate text-sm font-bold">${esc(p.titulo)}</span><button onclick="openDetail('${p.id}')" class="text-sm font-bold text-[#00FF88]">Ver</button><button onclick="deletePost('${p.id}')" class="text-xs font-bold text-red-300">Eliminar</button></div>`).join('')||'Sin posts';
+  document.getElementById('adminList').innerHTML=allPosts.map(p=>`<div class="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5"><span class="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold">${esc(getF(p,'categoria','category')||'Juego')}</span><span class="min-w-0 flex-1 truncate text-sm font-bold">${esc(getF(p,'titulo','title'))}</span><button onclick="openDetail('${p.id}')" class="text-sm font-bold text-[#00FF88]">Ver</button><button onclick="deletePost('${p.id}')" class="text-xs font-bold text-red-300">Eliminar</button></div>`).join('')||'Sin posts';
 }
 async function deletePost(id){
   if(!confirm('¿Eliminar este post?')) return;

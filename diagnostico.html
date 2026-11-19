@@ -32,7 +32,7 @@ async function test(){
       return;
     }
     result.innerHTML = '<span class="ok">✅ Supabase SÍ responde</span><br><b>Posts encontrados:</b> '+(data||[]).length+'<br>'
-      + (data&&data.length>0 ? '<b>Primer post:</b> '+(data[0].titulo||'(sin título)')+' - '+ (data[0].plataforma||'')+'<br><br><span class="ok">Si aquí dice que hay posts pero en la web principal no se ven, es que la web principal es el archivo VIEJO (caché de Vercel). Borra caché con Ctrl+Shift+R.</span>' : '<b>La tabla está VACÍA de verdad.</b><br>No es bug de conexión. Hay que crear el primer post desde Acceder en la web principal. Si ya creaste posts y aquí dice 0, es que no se guardaron porque faltaba una columna - corre supabase.sql y vuelve a crear.');
+      + (data&&data.length>0 ? '<b>Primer post:</b> '+(data[0].titulo||data[0].title||'(sin título)')+' - '+ (data[0].plataforma||'')+'<br><br><span class="ok">Si aquí dice que hay posts pero en la web principal no se ven, es que la web principal es el archivo VIEJO (caché de Vercel). Borra caché con Ctrl+Shift+R.</span>' : '<b>La tabla está VACÍA de verdad.</b><br>No es bug de conexión. Hay que crear el primer post desde Acceder en la web principal. Si ya creaste posts y aquí dice 0, es que no se guardaron porque faltaba una columna - corre supabase.sql y vuelve a crear.');
     // Probar settings también
     let {data:s2, error:e2} = await client.from('app_settings').select('*').eq('id',1).single();
     result.innerHTML += '<br><br><b>app_settings id=1:</b> ' + (e2 ? '<span class="err">Error: '+e2.message+'</span>' : '✅ Existe, total_visitas='+(s2?.total_visitas||0));
