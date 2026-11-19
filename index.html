@@ -81,14 +81,14 @@ select.input option{background:#101017}
     </div>
   </section>
 
-  <!-- PUBLICIDAD 728x90 - IGUAL -->
-  <section aria-label="Publicidad" class="mt-6 overflow-hidden rounded-3xl border border-dashed border-white/15 bg-white/[.02]">
-    <div class="flex min-h-[96px] flex-col items-center justify-center px-4 py-5 text-center">
-      <span class="text-[11px] font-bold tracking-[.28em] text-slate-500">PUBLICIDAD</span>
-      <p class="mt-1.5 font-display text-sm font-bold text-slate-300">Espacio publicitario 728x90</p>
-      <p class="mt-1 text-xs text-slate-500">Aquí va tu anuncio de Google AdSense / patrocinador</p>
-    </div>
-  </section>
+  <!-- PUBLICIDAD 728x90 - CONTROLADO DESDE ADMIN -->
+   <section id="adTop" aria-label="Publicidad" class="mt-6 overflow-hidden rounded-3xl border border-dashed border-white/15 bg-white/[.02]">
+     <div class="flex min-h-[96px] flex-col items-center justify-center px-4 py-5 text-center">
+       <span class="text-[11px] font-bold tracking-[.28em] text-slate-500">PUBLICIDAD</span>
+       <p class="mt-1.5 font-display text-sm font-bold text-slate-300">Espacio publicitario 728x90</p>
+       <p class="mt-1 text-xs text-slate-500">Aqui va tu anuncio de Google AdSense / patrocinador</p>
+     </div>
+   </section>
 
     <!-- DIAGNÓSTICO - Solo aparece si hay problema con los posts -->
   <div id="debugBox" class="mt-6 hidden rounded-3xl border border-yellow-400/40 bg-yellow-400/10 p-5">
@@ -145,6 +145,67 @@ select.input option{background:#101017}
       <div id="adminMsg" class="text-sm font-bold text-[#00FF88]"></div>
       <h4 class="font-display font-bold">Mis posts</h4>
       <div id="adminList"></div>
+      <div class="mt-4 flex flex-wrap gap-3">
+        <button onclick="loadPapelera()" class="rounded-full border border-white/15 px-5 py-2.5 text-sm font-bold">🗑️ Ver Papelera / Restaurar posts borrados</button>
+      </div>
+      <div id="papeleraBox" class="mt-4 hidden rounded-2xl border border-white/10 bg-black/20 p-4">
+        <b>Papelera - posts borrados (copia de seguridad)</b>
+        <p class="mt-1 text-sm text-slate-400">Si un post se borró por error, aquí puedes restaurarlo. Solo el admin ve esto.</p>
+        <div id="papeleraList" class="mt-3 grid gap-2"></div>
+      </div>
+
+      <!-- CONTROL DE ANUNCIOS -->
+      <div class="mt-8 rounded-3xl border border-yellow-400/20 bg-yellow-400/[.04] p-5">
+        <h3 class="font-display text-lg font-black">📢 Control de Anuncios</h3>
+        <p class="mt-1 text-sm text-slate-400">Tú controlas qué anuncio sale en cada espacio, sin tocar código. Si dejas un espacio inactivo, se muestra el cartel de "Espacio publicitario" vacío. Si pones Código HTML (AdSense), ese manda sobre la imagen.</p>
+
+        <div class="mt-5 grid gap-5">
+          <!-- TOP -->
+          <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div class="flex items-center justify-between gap-3">
+              <b>1. Anuncio Superior - 728x90</b>
+              <label class="flex items-center gap-2 text-sm font-bold"><input type="checkbox" id="adTopActivo"> Activo</label>
+            </div>
+            <div class="mt-3 grid gap-3 md:grid-cols-2">
+              <label class="text-sm font-bold">Imagen del anuncio (link)<input id="adTopImagen" placeholder="https://... imagen del anunciante" class="input"></label>
+              <label class="text-sm font-bold">Link al hacer clic<input id="adTopLink" placeholder="https://... a donde va el anuncio" class="input"></label>
+            </div>
+            <label class="mt-3 block text-sm font-bold">Código HTML / AdSense (opcional, si lo pones manda sobre la imagen)<textarea id="adTopCodigo" rows="2" placeholder="&lt;script... AdSense ...&gt; o &lt;a href=...&gt;" class="input"></textarea></label>
+          </div>
+
+          <!-- FEED -->
+          <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div class="flex items-center justify-between gap-3">
+              <b>2. Anuncio en el Feed - entre los posts</b>
+              <label class="flex items-center gap-2 text-sm font-bold"><input type="checkbox" id="adFeedActivo"> Activo</label>
+            </div>
+            <div class="mt-3 grid gap-3 md:grid-cols-2">
+              <label class="text-sm font-bold">Imagen del anuncio<input id="adFeedImagen" placeholder="https://... imagen" class="input"></label>
+              <label class="text-sm font-bold">Link al hacer clic<input id="adFeedLink" placeholder="https://..." class="input"></label>
+            </div>
+            <label class="mt-3 block text-sm font-bold">Código HTML / AdSense (opcional)<textarea id="adFeedCodigo" rows="2" placeholder="Código AdSense..." class="input"></textarea></label>
+          </div>
+
+          <!-- SIDEBAR -->
+          <div class="rounded-2xl border border-white/10 bg-black/20 p-4">
+            <div class="flex items-center justify-between gap-3">
+              <b>3. Anuncio Sidebar - 300x250</b>
+              <label class="flex items-center gap-2 text-sm font-bold"><input type="checkbox" id="adSidebarActivo"> Activo</label>
+            </div>
+            <div class="mt-3 grid gap-3 md:grid-cols-2">
+              <label class="text-sm font-bold">Imagen del anuncio<input id="adSidebarImagen" placeholder="https://... imagen" class="input"></label>
+              <label class="text-sm font-bold">Link al hacer clic<input id="adSidebarLink" placeholder="https://..." class="input"></label>
+            </div>
+            <label class="mt-3 block text-sm font-bold">Código HTML / AdSense (opcional)<textarea id="adSidebarCodigo" rows="2" placeholder="Código AdSense..." class="input"></textarea></label>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-3">
+          <button onclick="saveAds()" class="rounded-full bg-yellow-400 px-7 py-3.5 font-display text-sm font-bold text-black">💾 Guardar anuncios</button>
+          <button onclick="clearAds()" class="rounded-full border border-white/15 px-6 py-3.5 text-sm font-bold">Quitar todos los anuncios</button>
+        </div>
+        <div id="adsMsg" class="mt-3 text-sm font-bold text-[#00FF88]"></div>
+      </div>
     </div>
   </section>
 
@@ -171,7 +232,13 @@ select.input option{background:#101017}
         <h3 class="mt-3 font-display text-lg font-bold">Sin resultados</h3>
         <p class="mt-1 text-sm text-slate-400">Prueba con otro filtro o crea el primer post como admin.</p>
       </div>
-      <div id="loadMsg" class="mt-10 text-slate-400">Cargando comunidad…</div>
+      <div id="adFeed" class="mt-8 hidden overflow-hidden rounded-3xl border border-dashed border-white/15 bg-white/[.02]">
+         <div class="flex min-h-[120px] flex-col items-center justify-center px-4 py-5 text-center">
+           <span class="text-[11px] font-bold tracking-[.28em] text-slate-500">PUBLICIDAD</span>
+           <p class="mt-1.5 font-display text-sm font-bold text-slate-300">Anuncio en el feed</p>
+         </div>
+       </div>
+       <div id="loadMsg" class="mt-10 text-slate-400">Cargando comunidad…</div>
     </div>
 
     <!-- SIDEBAR - IGUAL -->
@@ -189,12 +256,12 @@ select.input option{background:#101017}
         <h3 class="font-display font-bold">ℹ️ Cómo funciona</h3>
         <p class="mt-3 text-sm leading-relaxed text-slate-400">1. Yo publico el video y el juego.<br>2. Tú le das like y comentas sin registrarte.<br>3. Descargas solo desde el link oficial que pongo.</p>
       </section>
-      <section class="overflow-hidden rounded-3xl border border-dashed border-white/15 bg-white/[.02]">
-        <div class="flex min-h-[250px] flex-col items-center justify-center px-4 py-5 text-center">
-          <span class="text-[11px] font-bold tracking-[.28em] text-slate-500">PUBLICIDAD</span>
-          <p class="mt-1.5 font-display text-sm font-bold text-slate-300">Espacio 300x250</p>
-        </div>
-      </section>
+      <section id="adSidebar" class="overflow-hidden rounded-3xl border border-dashed border-white/15 bg-white/[.02]">
+         <div class="flex min-h-[250px] flex-col items-center justify-center px-4 py-5 text-center">
+           <span class="text-[11px] font-bold tracking-[.28em] text-slate-500">PUBLICIDAD</span>
+           <p class="mt-1.5 font-display text-sm font-bold text-slate-300">Espacio 300x250</p>
+         </div>
+       </section>
     </aside>
   </div>
 </main>
@@ -233,6 +300,8 @@ select.input option{background:#101017}
 
 <script>
 let supabaseClient=null, isAdmin=false, currentFilter='Todos', allPosts=[], allComments=[];
+let editingId=null;
+let currentAds={ top:{activo:false, imagen:'', link:'', codigo:''}, feed:{activo:false, imagen:'', link:'', codigo:''}, sidebar:{activo:false, imagen:'', link:'', codigo:''} };
 function showConnError(msg){
   let box=document.getElementById('debugBox');
   let txt=document.getElementById('debugText');
@@ -296,7 +365,14 @@ async function checkAdmin(){
   }
 }
 function logout(){isAdmin=false;document.getElementById('adminPanel').classList.add('hidden');}
-function clearForm(){['fTitulo','fJuego','fDescCorta','fDesc','fVideo','fDescarga','fImagen','fPasos','fReqMin','fReqRec','fTags'].forEach(id=>document.getElementById(id).value='');document.getElementById('fDescargaLabel').value='Descargar juego';}
+function clearForm(){
+  editingId=null;
+  ['fTitulo','fJuego','fDescCorta','fDesc','fVideo','fDescarga','fImagen','fPasos','fReqMin','fReqRec','fTags'].forEach(id=>{let el=document.getElementById(id); if(el) el.value='';});
+  let dl=document.getElementById('fDescargaLabel'); if(dl) dl.value='Descargar juego';
+  let btn=document.querySelector('button[onclick="savePost()"]'); if(btn) btn.textContent='Guardar post';
+  let c=document.getElementById('cancelEditBtn'); if(c) c.remove();
+  // No borramos adminMsg aquí para que el mensaje de guardado quede visible
+}
 
 async function loadAll(){
   try{
@@ -304,6 +380,14 @@ async function loadAll(){
     let debugEl = document.getElementById('debugBox');
     let debugText = document.getElementById('debugText');
     let {data:settings, error:errSettings} = await supabaseClient.from('app_settings').select('*').eq('id',1).single();
+    // Cargar anuncios guardados (si la columna ads no existe aún, queda vacío y no rompe)
+    try{
+      let raw = settings?.ads ?? settings?.ads_json ?? null;
+      if(raw){ currentAds = parseAds(raw); }
+      // Si settings tiene total_visits en inglés, usarlo también
+      if(settings && settings.total_visitas==null && settings.total_visits!=null){ settings.total_visitas = settings.total_visits; }
+    }catch(e){ console.warn('ads parse error', e); }
+    renderAds();
     let visitas=(settings?.total_visitas||0)+1;
     if(!errSettings){
       try{ await supabaseClient.from('app_settings').update({total_visitas:visitas}).eq('id',1); }catch(_){}
@@ -372,10 +456,9 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function badgeClass(p){ if(p==='YouTube') return 'bg-[#FF0000] text-white shadow-[0_8px_24px_rgba(255,0,0,.35)]'; if(p==='TikTok') return 'bg-white text-black shadow-[0_8px_24px_rgba(255,255,255,.18)]'; if(p==='Kick') return 'bg-[#00FF88] text-black shadow-[0_8px_24px_rgba(0,255,136,.35)]'; return 'bg-[#A855F7] text-white'; }
 function coverGrad(p){ if(p==='YouTube') return 'cover-grad-YouTube'; if(p==='TikTok') return 'cover-grad-TikTok'; if(p==='Kick') return 'cover-grad-Kick'; return 'cover-grad-Juegos'; }
 function coverColor(p){ if(p==='Kick') return '#00FF88'; if(p==='YouTube') return '#FF4D4D'; return '#A855F7'; }
-function getDescarga(p){ let v = getF(p,'descarga_url','downloads')||''; v = String(v); if(v.trim().startsWith('[{')){ try{ let a=JSON.parse(v); if(a[0]&&a[0].url) return a[0].url; }catch(e){} } return v; }
-function getCover(p){ return getF(p,'imagen_url','cover') || p.portada || ''; }
-function getShort(p){ return getF(p,'descripcion_corta','short_desc') || getF(p,'descripcion','long_desc') || ''; }
-function getLong(p){ return getF(p,'descripcion','long_desc') || getF(p,'descripcion_corta','short_desc') || ''; }
+function getCover(p){ return p.imagen_url || p.portada || ''; }
+function getShort(p){ return p.descripcion_corta || p.descripcion || ''; }
+function getLong(p){ return p.descripcion || p.descripcion_corta || ''; }
 function commentsFor(id){ return allComments.filter(c=>String(c.post_id)===String(id)); }
 
 function render(){
@@ -393,7 +476,7 @@ function render(){
       <div class="absolute -right-8 -top-8 h-32 w-32 rounded-full blur-2xl" style="background:${coverColor(getF(p,'plataforma','platform'))};opacity:.35"></div>
       <div class="absolute -bottom-10 -left-6 h-28 w-28 rounded-full bg-[#A855F7] opacity-25 blur-2xl"></div>
       <div class="relative flex flex-col items-center px-4 text-center">
-        <span class="grid h-16 w-16 place-items-center rounded-[20px] border border-white/20 bg-black/40 font-display text-3xl font-black shadow-2xl backdrop-blur sm:h-20 sm:w-20 sm:text-4xl" style="color:${coverColor(getF(p,'plataforma','platform'))}">${esc((getF(p,'juego','game')||'A').trim().slice(0,1).toUpperCase())}</span>
+        <span class="grid h-16 w-16 place-items-center rounded-[20px] border border-white/20 bg-black/40 font-display text-3xl font-black shadow-2xl backdrop-blur sm:h-20 sm:w-20 sm:text-4xl" style="color:${coverColor(getF(p,'plataforma','platform'))}">${esc((p.juego||'A').trim().slice(0,1).toUpperCase())}</span>
         <span class="mt-3 font-display font-bold uppercase tracking-[.22em] text-white/90 text-[11px] sm:text-xs">${esc(getF(p,'juego','game')||'')}</span>
         <span class="mt-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-white/50">🎮 ${esc(getF(p,'plataforma','platform')||'')}</span>
       </div>
@@ -442,14 +525,14 @@ function openDetail(id){
   let p=allPosts.find(x=>String(x.id)===String(id));
   if(!p) return;
   supabaseClient.from('posts').update({visitas:(p.visitas||0)+1}).eq('id',p.id).then(()=>{ p.visitas=(p.visitas||0)+1; render(); });
-  let pasos=(getF(p,'pasos','steps')||'').split('\n').filter(s=>s.trim());
+  let pasos=(p.pasos||'').split('\n').filter(s=>s.trim());
   let tags=(p.tags||'').split(',').filter(s=>s.trim());
   let cover=getCover(p);
   let coverHtml = cover ? `<img src="${esc(cover)}" class="mt-4 w-full h-[280px] object-cover rounded-[20px]">` : '';
   document.getElementById('detailBox').innerHTML=`
     <div class="flex justify-between items-start gap-3">
       <div><span class="inline-block rounded-full px-3 py-1.5 text-[11px] font-black ${badgeClass(getF(p,'plataforma','platform'))}">${esc(getF(p,'plataforma','platform'))}</span>
-      <h2 class="mt-3 font-display text-2xl font-black leading-tight">${esc(getF(p,'titulo','title'))}</h2>
+      <h2 class="mt-3 font-display text-2xl font-black leading-tight">${esc(p.titulo)}</h2>
       <p class="mt-2 text-sm font-bold text-[#00FF88]">${esc(getF(p,'juego','game')||'')} • ${new Date(p.created_at).toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}</p></div>
       <button onclick="closeDetail()" class="rounded-full border border-white/15 px-4 py-2 font-bold">✕</button>
     </div>
@@ -457,9 +540,9 @@ function openDetail(id){
     <p class="mt-4 leading-relaxed text-slate-300" style="white-space:pre-wrap">${esc(getLong(p))}</p>
     ${p.video_url?`<div class="mt-8 rounded-[20px] border border-white/10 bg-black/25 p-5"><h3 class="font-display font-bold">▶️ Video</h3><a href="${esc(p.video_url)}" target="_blank" class="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-[#00FF88] px-5 py-3.5 text-sm font-bold text-black transition hover:brightness-110">Ver video en ${esc(getF(p,'plataforma','platform'))} <span>↗</span></a></div>`:''}
     ${pasos.length?`<div class="mt-8"><h3 class="font-display text-lg font-bold">Cómo instalar paso a paso</h3><ol class="mt-4 space-y-3">${pasos.map((s,i)=>`<li class="flex gap-3.5 rounded-2xl border border-white/10 bg-white/[.03] p-4"><span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#00FF88] font-display font-black text-black">${i+1}</span><span class="pt-1 text-[15px] leading-relaxed text-slate-200">${esc(s)}</span></li>`).join('')}</ol></div>`:''}
-    ${(getF(p,'requisitos_min','req_min')||getF(p,'requisitos_rec','req_rec'))?`<div class="mt-8 grid gap-3 sm:grid-cols-2"><div class="rounded-2xl border border-white/10 bg-black/25 p-5"><b>✅ Mínimos</b><p class="mt-2 text-sm text-slate-300">${esc(getF(p,'requisitos_min','req_min')||'No especificado')}</p></div><div class="rounded-2xl border border-white/10 bg-black/25 p-5"><b>🚀 Recomendados</b><p class="mt-2 text-sm text-slate-300">${esc(getF(p,'requisitos_rec','req_rec')||'No especificado')}</p></div></div>`:''}
+    ${(p.requisitos_min||p.requisitos_rec)?`<div class="mt-8 grid gap-3 sm:grid-cols-2"><div class="rounded-2xl border border-white/10 bg-black/25 p-5"><b>✅ Mínimos</b><p class="mt-2 text-sm text-slate-300">${esc(p.requisitos_min||'No especificado')}</p></div><div class="rounded-2xl border border-white/10 bg-black/25 p-5"><b>🚀 Recomendados</b><p class="mt-2 text-sm text-slate-300">${esc(p.requisitos_rec||'No especificado')}</p></div></div>`:''}
     <div class="mt-8"><h3 class="font-display text-lg font-bold">Enlaces de descarga</h3><div class="mt-4 grid gap-3 sm:grid-cols-2">
-      ${getDescarga(p)?`<a href="${esc(getDescarga(p))}" target="_blank" class="flex items-center justify-center gap-2 rounded-full bg-[#00FF88] px-4 py-3 text-sm font-bold text-black transition hover:brightness-110">⬇️ ${esc(p.descarga_label||'Descargar')}</a>`:`<p class="text-sm text-slate-500">Este post todavía no tiene enlace de descarga.</p>`}
+      ${p.descarga_url?`<a href="${esc(p.descarga_url)}" target="_blank" class="flex items-center justify-center gap-2 rounded-full bg-[#00FF88] px-4 py-3 text-sm font-bold text-black transition hover:brightness-110">⬇️ ${esc(p.descarga_label||'Descargar')}</a>`:`<p class="text-sm text-slate-500">Este post todavía no tiene enlace de descarga.</p>`}
     </div></div>
     ${tags.length?`<div class="mt-6 text-sm text-slate-400">Tags: ${tags.map(t=>`#${esc(t.trim())}`).join(' ')}</div>`:''}
     <div class="mt-8 flex flex-wrap items-center gap-3 border-y border-white/10 py-6">
@@ -558,26 +641,230 @@ async function savePost(){
     tags: _tags,
     likes:0, visitas:0, views:0
   };
-  let {data,error}=await supabaseClient.from('posts').insert([payload]).select();
+  let data=null, error=null;
+  if(editingId){
+    // BILINGÜE + EDITAR: al editar NO reseteamos likes ni visitas
+    delete payload.likes; delete payload.visitas; delete payload.views;
+    let res = await supabaseClient.from('posts').update(payload).eq('id', editingId).select();
+    data=res.data; error=res.error;
+  } else {
+    let res = await supabaseClient.from('posts').insert([payload]).select();
+    data=res.data; error=res.error;
+  }
   if(error){
-    alert('NO se guardó. Error: '+error.message+' (code '+(error.code||'')+')\n\nSi es 23502 = falta correr el nuevo supabase.sql que quita el NOT NULL de title. Corre el supabase.sql de este ZIP y vuelve a intentar.');
+    alert('NO se guardó. Error: '+error.message+' (code '+(error.code||'')+')\n\nSi es 23502 = falta correr el nuevo supabase.sql de este ZIP que quita el NOT NULL de title/titulo/game/juego y sincroniza español <-> inglés. Corre TODO el supabase.sql en Supabase > SQL Editor > Run y vuelve a intentar.');
     document.getElementById('adminMsg').textContent='❌ NO se guardó: '+error.message+' - Corre supabase.sql';
     document.getElementById('adminMsg').style.color='#FF8080';
     return;
   }
-  document.getElementById('adminMsg').textContent='✅ Post guardado - ya debe aparecer abajo. Si no aparece, pulsa Volver a diagnosticar.';
+  document.getElementById('adminMsg').textContent = editingId ? '✅ Post actualizado' : '✅ Post guardado - ya debe aparecer abajo. Si no aparece, pulsa Volver a diagnosticar.';
   document.getElementById('adminMsg').style.color='#00FF88';
   clearForm();
   await loadAll();
 }
 function renderAdminList(){
-  document.getElementById('adminList').innerHTML=allPosts.map(p=>`<div class="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5"><span class="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold">${esc(getF(p,'categoria','category')||'Juego')}</span><span class="min-w-0 flex-1 truncate text-sm font-bold">${esc(getF(p,'titulo','title'))}</span><button onclick="openDetail('${p.id}')" class="text-sm font-bold text-[#00FF88]">Ver</button><button onclick="deletePost('${p.id}')" class="text-xs font-bold text-red-300">Eliminar</button></div>`).join('')||'Sin posts';
+  document.getElementById('adminList').innerHTML=allPosts.map(p=>`<div class="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3.5"><span class="rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold">${esc(getF(p,'categoria','category')||'Juego')}</span><span class="min-w-0 flex-1 truncate text-sm font-bold">${esc(getF(p,'titulo','title'))}</span><button onclick="openDetail('${p.id}')" class="text-sm font-bold text-[#00FF88]">Ver</button><button onclick="editPost('${p.id}')" class="rounded-full bg-white px-4 py-1.5 text-xs font-bold text-black">Editar</button><button onclick="deletePost('${p.id}')" class="text-xs font-bold text-red-300">Eliminar</button></div>`).join('')||'Sin posts';
+}
+async function editPost(id){
+  let p = allPosts.find(x=>String(x.id)===String(id));
+  if(!p) return alert('No se encontró el post');
+  editingId = id;
+  document.getElementById('fTitulo').value = getF(p,'titulo','title')||'';
+  document.getElementById('fJuego').value = getF(p,'juego','game')||'';
+  document.getElementById('fPlataforma').value = getF(p,'plataforma','platform')||'YouTube';
+  document.getElementById('fCategoria').value = getF(p,'categoria','category')||'Juego';
+  document.getElementById('fDescCorta').value = getF(p,'descripcion_corta','short_desc')||'';
+  document.getElementById('fDesc').value = getF(p,'descripcion','long_desc')||'';
+  document.getElementById('fVideo').value = p.video_url||'';
+  document.getElementById('fDescarga').value = getDescarga(p)||'';
+  document.getElementById('fDescargaLabel').value = p.descarga_label||'Descargar juego';
+  document.getElementById('fImagen').value = getCover(p)||'';
+  document.getElementById('fPasos').value = getF(p,'pasos','steps')||'';
+  document.getElementById('fReqMin').value = getF(p,'requisitos_min','req_min')||'';
+  document.getElementById('fReqRec').value = getF(p,'requisitos_rec','req_rec')||'';
+  document.getElementById('fTags').value = p.tags||'';
+  document.getElementById('adminMsg').textContent = '✏️ Editando: ' + (getF(p,'titulo','title')||'') + ' - Pulsa Actualizar para guardar los cambios.';
+  document.getElementById('adminMsg').style.color = '#FFD84D';
+  // Cambiar texto del botón Guardar
+  let btn = document.querySelector('button[onclick="savePost()"]');
+  if(btn) btn.textContent = 'Actualizar post';
+  document.getElementById('adminPanel').scrollIntoView({behavior:'smooth'});
+  // Mostrar botón cancelar edición si no existe
+  if(!document.getElementById('cancelEditBtn')){
+    let cancel = document.createElement('button');
+    cancel.id = 'cancelEditBtn';
+    cancel.textContent = 'Cancelar edición';
+    cancel.className = 'rounded-full border border-white/15 px-6 py-3.5 text-sm font-bold';
+    cancel.onclick = cancelEdit;
+    btn.parentNode.appendChild(cancel);
+  }
+}
+function cancelEdit(){
+  editingId = null;
+  clearForm();
+  let btn = document.querySelector('button[onclick="savePost()"]');
+  if(btn) btn.textContent = 'Guardar post';
+  let c = document.getElementById('cancelEditBtn');
+  if(c) c.remove();
+  document.getElementById('adminMsg').textContent = '';
+}
+
+// --- ANUNCIOS ---
+function parseAds(raw){
+  try{
+    if(!raw) return { top:{activo:false, imagen:'', link:'', codigo:''}, feed:{activo:false, imagen:'', link:'', codigo:''}, sidebar:{activo:false, imagen:'', link:'', codigo:''} };
+    let obj = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    return {
+      top: { activo: !!obj.top?.activo, imagen: obj.top?.imagen||'', link: obj.top?.link||'', codigo: obj.top?.codigo||'' },
+      feed: { activo: !!obj.feed?.activo, imagen: obj.feed?.imagen||'', link: obj.feed?.link||'', codigo: obj.feed?.codigo||'' },
+      sidebar: { activo: !!obj.sidebar?.activo, imagen: obj.sidebar?.imagen||'', link: obj.sidebar?.link||'', codigo: obj.sidebar?.codigo||'' }
+    };
+  }catch(e){ return { top:{activo:false, imagen:'', link:'', codigo:''}, feed:{activo:false, imagen:'', link:'', codigo:''}, sidebar:{activo:false, imagen:'', link:'', codigo:''} }; }
+}
+function adHtml(ad, label){
+  if(!ad.activo) return null;
+  if(ad.codigo && ad.codigo.trim()){
+    return '<div class="w-full">' + ad.codigo + '</div>';
+  }
+  if(ad.imagen && ad.imagen.trim()){
+    let img = '<img src="'+esc(ad.imagen)+'" alt="'+esc(label)+'" class="mx-auto max-h-[250px] w-full object-contain rounded-2xl" onerror="this.style.display=\'none\'">';
+    if(ad.link && ad.link.trim()){
+      return '<a href="'+esc(ad.link)+'" target="_blank" rel="noopener" class="block w-full">' + img + '</a>';
+    }
+    return img;
+  }
+  return null;
+}
+function renderAds(){
+  let topEl = document.getElementById('adTop');
+  let feedEl = document.getElementById('adFeed');
+  let sideEl = document.getElementById('adSidebar');
+  if(topEl){
+    let html = adHtml(currentAds.top, 'Anuncio superior');
+    if(html){ topEl.innerHTML = '<div class="flex flex-col items-center justify-center px-4 py-3 text-center"><span class="text-[11px] font-bold tracking-[.28em] text-slate-500">PUBLICIDAD</span><div class="mt-2 w-full">'+html+'</div></div>'; topEl.classList.remove('border-dashed'); }
+  }
+  if(feedEl){
+    let html = adHtml(currentAds.feed, 'Anuncio feed');
+    if(html){ feedEl.classList.remove('hidden'); feedEl.innerHTML = '<div class="flex flex-col items-center justify-center px-4 py-5 text-center"><span class="text-[11px] font-bold tracking-[.28em] text-slate-500">PUBLICIDAD</span><div class="mt-2 w-full">'+html+'</div></div>'; feedEl.classList.remove('border-dashed'); }
+    else { feedEl.classList.add('hidden'); }
+  }
+  if(sideEl){
+    let html = adHtml(currentAds.sidebar, 'Anuncio sidebar');
+    if(html){ sideEl.innerHTML = '<div class="flex flex-col items-center justify-center px-4 py-5 text-center"><span class="text-[11px] font-bold tracking-[.28em] text-slate-500">PUBLICIDAD</span><div class="mt-2 w-full">'+html+'</div></div>'; sideEl.classList.remove('border-dashed'); }
+  }
+  fillAdsForm();
+}
+function fillAdsForm(){
+  let map = [['Top','top'],['Feed','feed'],['Sidebar','sidebar']];
+  for(let [cap, key] of map){
+    let a = currentAds[key]||{};
+    let elActivo = document.getElementById('ad'+cap+'Activo');
+    let elImg = document.getElementById('ad'+cap+'Imagen');
+    let elLink = document.getElementById('ad'+cap+'Link');
+    let elCod = document.getElementById('ad'+cap+'Codigo');
+    if(elActivo) elActivo.checked = !!a.activo;
+    if(elImg) elImg.value = a.imagen||'';
+    if(elLink) elLink.value = a.link||'';
+    if(elCod) elCod.value = a.codigo||'';
+  }
+}
+async function saveAds(){
+  let newAds = {
+    top: { activo: document.getElementById('adTopActivo').checked, imagen: document.getElementById('adTopImagen').value.trim(), link: document.getElementById('adTopLink').value.trim(), codigo: document.getElementById('adTopCodigo').value.trim() },
+    feed: { activo: document.getElementById('adFeedActivo').checked, imagen: document.getElementById('adFeedImagen').value.trim(), link: document.getElementById('adFeedLink').value.trim(), codigo: document.getElementById('adFeedCodigo').value.trim() },
+    sidebar: { activo: document.getElementById('adSidebarActivo').checked, imagen: document.getElementById('adSidebarImagen').value.trim(), link: document.getElementById('adSidebarLink').value.trim(), codigo: document.getElementById('adSidebarCodigo').value.trim() }
+  };
+  document.getElementById('adsMsg').textContent = 'Guardando anuncios...';
+  let {error} = await supabaseClient.from('app_settings').update({ ads: JSON.stringify(newAds) }).eq('id',1);
+  if(error){
+    // Si la columna ads no existe, intentar crearla via mensaje claro
+    document.getElementById('adsMsg').textContent = '❌ No se pudo guardar: ' + error.message + ' - Corre el supabase.sql de este ZIP (agrega la columna ads).';
+    document.getElementById('adsMsg').style.color = '#FF8080';
+    return alert('No se pudo guardar anuncios: ' + error.message + '\nCorre el supabase.sql de este ZIP y vuelve a intentar.');
+  }
+  currentAds = newAds;
+  renderAds();
+  document.getElementById('adsMsg').textContent = '✅ Anuncios guardados - ya se ven en la web.';
+  document.getElementById('adsMsg').style.color = '#00FF88';
+}
+async function clearAds(){
+  if(!confirm('¿Quitar todos los anuncios? Los espacios volverán a quedar vacíos.')) return;
+  let empty = { top:{activo:false, imagen:'', link:'', codigo:''}, feed:{activo:false, imagen:'', link:'', codigo:''}, sidebar:{activo:false, imagen:'', link:'', codigo:''} };
+  let {error} = await supabaseClient.from('app_settings').update({ ads: JSON.stringify(empty) }).eq('id',1);
+  if(error) return alert('No se pudo quitar: ' + error.message);
+  currentAds = empty;
+  fillAdsForm();
+  // Recargar para mostrar espacios vacíos originales
+  location.reload();
 }
 async function deletePost(id){
-  if(!confirm('¿Eliminar este post?')) return;
+  let p = allPosts.find(x=>String(x.id)===String(id));
+  let titulo = p ? (getF(p,'titulo','title')||'') : ('ID '+id);
+  if(!confirm('¿Eliminar este post?\n\n"' + titulo + '"\n\nSe guardará una copia en Papelera por si lo quieres restaurar.')) return;
+  let texto = prompt('Para confirmar, escribe ELIMINAR:');
+  if(texto !== 'ELIMINAR'){
+    alert('No se eliminó. Debes escribir ELIMINAR en mayúsculas para confirmar.');
+    return;
+  }
+  // 1. Guardar copia en Papelera (posts_backup) antes de borrar - así nunca se pierde para siempre
+  try{
+    if(p){
+      let backup = {...p};
+      delete backup.id;
+      backup.original_id = Number(id);
+      backup.deleted_at = new Date().toISOString();
+      // posts_backup tiene las mismas columnas que posts + original_id + deleted_at
+      let {error:errB} = await supabaseClient.from('posts_backup').insert([backup]);
+      if(errB) console.warn('No se pudo guardar backup (¿falta correr supabase.sql nuevo?):', errB.message);
+    }
+  }catch(e){ console.warn('Backup falló:', e); }
   let {error}=await supabaseClient.from('posts').delete().eq('id',id);
   if(error) return alert('No se pudo eliminar: '+error.message);
+  alert('Post eliminado, pero quedó copia en Papelera. Puedes restaurarlo desde Panel admin > Papelera.');
   loadAll();
+}
+async function loadPapelera(){
+  let box = document.getElementById('papeleraBox');
+  let list = document.getElementById('papeleraList');
+  if(!box || !list) return;
+  box.classList.toggle('hidden');
+  if(box.classList.contains('hidden')) return;
+  list.innerHTML = 'Cargando papelera...';
+  let {data, error} = await supabaseClient.from('posts_backup').select('*').order('deleted_at',{ascending:false}).limit(50);
+  if(error){ list.innerHTML = 'No se pudo cargar papelera: '+error.message+'<br>Corre el supabase.sql de este ZIP (crea la tabla posts_backup).'; return; }
+  if(!data || data.length===0){ list.innerHTML = 'Papelera vacía. No hay posts para restaurar.'; return; }
+  list.innerHTML = data.map(b=>`<div class="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3"><span class="min-w-0 flex-1 truncate text-sm font-bold">${esc(getF(b,'titulo','title')||'(sin título)')} <span class="text-xs text-slate-400">- borrado ${new Date(b.deleted_at).toLocaleString('es-ES')}</span></span><button onclick="restorePost('${b.original_id || b.id}', '${b.id}')" class="rounded-full bg-[#00FF88] px-4 py-1.5 text-xs font-bold text-black">Restaurar</button><button onclick="deleteBackup('${b.id}')" class="text-xs font-bold text-red-300">Borrar para siempre</button></div>`).join('');
+}
+async function restorePost(originalId, backupId){
+  let {data:backup, error:errB} = await supabaseClient.from('posts_backup').select('*').eq('id', backupId).single();
+  if(errB || !backup) return alert('No se pudo cargar la copia: '+(errB?.message||''));
+  let payload = {...backup};
+  delete payload.id; delete payload.original_id; delete payload.deleted_at; delete payload.created_at;
+  // BILINGÜE COMPLETO al restaurar: mandamos TODO español + inglés, igual que al crear
+  payload.titulo = getF(backup,'titulo','title'); payload.title = payload.titulo;
+  payload.juego = getF(backup,'juego','game'); payload.game = payload.juego;
+  payload.plataforma = getF(backup,'plataforma','platform'); payload.platform = payload.plataforma;
+  payload.categoria = getF(backup,'categoria','category'); payload.category = payload.categoria;
+  payload.descripcion_corta = getF(backup,'descripcion_corta','short_desc'); payload.short_desc = payload.descripcion_corta;
+  payload.descripcion = getF(backup,'descripcion','long_desc'); payload.long_desc = payload.descripcion;
+  payload.descarga_url = backup.descarga_url || backup.downloads || ''; payload.downloads = payload.descarga_url;
+  payload.imagen_url = getF(backup,'imagen_url','cover'); payload.cover = payload.imagen_url;
+  payload.pasos = getF(backup,'pasos','steps'); payload.steps = payload.pasos;
+  payload.requisitos_min = getF(backup,'requisitos_min','req_min'); payload.req_min = payload.requisitos_min;
+  payload.requisitos_rec = getF(backup,'requisitos_rec','req_rec'); payload.req_rec = payload.requisitos_rec;
+  payload.visitas = backup.visitas ?? backup.views ?? 0; payload.views = payload.visitas;
+  let {error} = await supabaseClient.from('posts').insert([payload]).select();
+  if(error) return alert('No se pudo restaurar: '+error.message);
+  // Borrar de papelera después de restaurar
+  await supabaseClient.from('posts_backup').delete().eq('id', backupId);
+  alert('✅ Post restaurado');
+  loadAll(); loadPapelera();
+}
+async function deleteBackup(backupId){
+  if(!confirm('¿Borrar esta copia para siempre? Ya no se podrá restaurar.')) return;
+  let {error} = await supabaseClient.from('posts_backup').delete().eq('id', backupId);
+  if(error) return alert('No se pudo borrar: '+error.message);
+  loadPapelera();
 }
 </script>
 </body>
