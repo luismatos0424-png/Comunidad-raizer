@@ -7,6 +7,13 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
+<!-- BLINDAJE ACCEDER: se define ANTES del script principal, así Acceder abre aunque Supabase falle -->
+<script>
+window.openLogin = function(){ var m=document.getElementById('loginModal'); if(m) m.style.display='grid'; else alert('Ventana de acceso no encontrada - recarga con Ctrl+Shift+R'); };
+window.closeLogin = function(){ var m=document.getElementById('loginModal'); if(m) m.style.display='none'; };
+window.closeDetail = function(){ var m=document.getElementById('detailModal'); if(m) m.style.display='none'; };
+window.__jsHeadOK = true;
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 body{font-family:Rajdhani,system-ui,sans-serif;background:#08080D;color:#fff}
@@ -36,11 +43,12 @@ select.input option{background:#101017}
     </div>
     <div class="flex shrink-0 items-center gap-2.5">
       <a href="#posts" class="hidden sm:block rounded-full border border-white/20 bg-white/[.04] px-5 py-2.5 text-sm font-bold">Ver posts</a>
-      <button onclick="openLogin()" class="rounded-full bg-[#00FF88] px-6 py-2.5 text-sm font-bold text-black shadow-[0_8px_28px_rgba(0,255,136,.30)] transition hover:brightness-110">Acceder</button>
+      <button onclick="if(window.openLogin) window.openLogin(); else document.getElementById('loginModal').style.display='grid';" class="rounded-full bg-[#00FF88] px-6 py-2.5 text-sm font-bold text-black shadow-[0_8px_28px_rgba(0,255,136,.30)] transition hover:brightness-110">Acceder</button>
     </div>
   </div>
 </header>
 
+<div id="jsStatus" style="max-width:1280px;margin:12px auto 0;padding:10px 16px;border-radius:12px;background:#111;font-size:13px;text-align:center;color:#94A3B8">⏳ Cargando comunidad... Si esto no cambia en 5 segundos, recarga con <b style="color:#fff">Ctrl + Shift + R</b></div>
 <main id="inicio" class="mx-auto max-w-[1280px] px-4 pb-20 sm:px-6">
 
   <!-- HERO - IGUAL: Bienvenidos a mi comunidad -->
@@ -357,6 +365,7 @@ function setFilter(f,el){
   render();
 }
 function openLogin(){document.getElementById('loginModal').style.display='grid';}
+window.__jsMainOK = true; // Marca: el script principal sí cargó. Si no ves esto en consola, el script se rompió antes.
 function closeLogin(){document.getElementById('loginModal').style.display='none';}
 function closeDetail(){document.getElementById('detailModal').style.display='none';}
 document.getElementById('loginModal').addEventListener('click',e=>{if(e.target.id==='loginModal')closeLogin()});
@@ -420,18 +429,15 @@ function renderPasosFields(texto){
   if(!container) return;
   container.innerHTML = '';
   let lines = (texto||'').split('\n').map(s=>s.trim()).filter(s=>s!=='');
-  // Quitar prefijos "Paso 1:" si el post viejo los tenía guardados, para no duplicar "Paso 1: Paso 1:"
   lines = lines.map(s=>s.replace(/^Paso\s*\d+\s*[:.-]\s*/i,'').trim());
   if(lines.length===0) lines = ['', ''];
   lines.forEach(l=>addPasoField(l));
-  // Si solo venía 1 paso, dejar 2 casillas vacías para que se vea Paso 1 y Paso 2
   if(lines.length===1) addPasoField('');
   renumberPasos();
 }
 function collectPasos(){
   let inputs = document.querySelectorAll('#pasosContainer .paso-input');
   let vals = Array.from(inputs).map(i=>i.value.trim()).filter(v=>v!=='');
-  // Guardar sin prefijo "Paso X:" - el detalle ya muestra el número en el círculo verde
   let joined = vals.join('\n');
   let hidden = document.getElementById('fPasos');
   if(hidden) hidden.value = joined;
@@ -495,9 +501,11 @@ async function loadAll(){
       debugEl.classList.add('hidden');
     }
     render();
+    let jsSt = document.getElementById('jsStatus'); if(jsSt){ jsSt.style.display='none'; }
     if(isAdmin) renderAdminList();
   }catch(e){
     console.error('CONEXION ERROR:', e);
+    let jsSt2 = document.getElementById('jsStatus'); if(jsSt2){ jsSt2.innerHTML = '❌ Error de conexión: ' + e.message + ' - Revisa el cuadrito de diagnóstico abajo.'; jsSt2.style.color = '#F87171'; jsSt2.style.display='block'; }
     document.getElementById('grid').innerHTML='<p class="p-5 text-red-300">Error de conexión: '+e.message+'</p>';
     let cfg2=getCfg();
     let hint = 'Error exacto: <b>'+e.message+'</b><br><br>URL que está usando: <code style="background:#000;padding:2px 6px;border-radius:6px">'+cfg2.u+'</code><br>Llave empieza con: <code style="background:#000;padding:2px 6px;border-radius:6px">'+cfg2.k.slice(0,18)+'...</code><br><br>Si la URL termina en <b>/rest/v1/</b>, quítala en GitHub > config.js. Si la llave no empieza con <b>sb_publishable_</b>, está mal copiada. Si todo está bien, entra a Supabase > tu proyecto y mira si dice <b>Paused</b> (pausado) - si está pausado, dale a Restore / Unpause y espera 1 min.';
@@ -634,7 +642,6 @@ function openDetail(id){
       <div id="list-detail-${p.id}" class="mt-4 space-y-3"></div>
     </div>
   `;
-  // Compartir - inyección segura: si falla, el post igual se abre
   try{ if(window.buildShareSection) document.getElementById('detailBox').innerHTML += window.buildShareSection(p); }catch(e){ console.warn('share detail error', e); }
   document.getElementById('detailModal').style.display='grid';
   loadCommentsDetail(p.id);
@@ -947,9 +954,11 @@ async function deleteBackup(backupId){
 document.addEventListener('DOMContentLoaded', function(){
   let c = document.getElementById('pasosContainer');
   if(c && c.children.length===0) renderPasosFields('');
+  // Actualizar el indicador: JS principal cargó OK
+  let s = document.getElementById('jsStatus');
+  if(s){ s.innerHTML = '✅ JS cargó bien - Conectando a Supabase...'; s.style.color = '#00FF88'; }
 });
 </script>
-
 <!-- COMPARTIR - Script aislado: si esto falla, los posts y Acceder siguen funcionando -->
 <script>
 (function(){
@@ -1081,5 +1090,4 @@ document.addEventListener('DOMContentLoaded', function(){
 })();
 </script>
 </body>
-
 </html>
