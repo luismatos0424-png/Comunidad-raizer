@@ -358,7 +358,7 @@ function setFilter(f,el){
 }
 function openLogin(){document.getElementById('loginModal').style.display='grid';}
 function closeLogin(){document.getElementById('loginModal').style.display='none';}
-function closeDetail(){document.getElementById('detailModal').style.display='none';}
+function closeDetail(){document.getElementById('detailModal').style.display='none'; try{ if(window.location.hash.startsWith('#post-')) history.replaceState(null,'',window.location.pathname); }catch(e){} }
 document.getElementById('loginModal').addEventListener('click',e=>{if(e.target.id==='loginModal')closeLogin()});
 document.getElementById('detailModal').addEventListener('click',e=>{if(e.target.id==='detailModal')closeDetail()});
 
@@ -479,6 +479,14 @@ async function loadAll(){
       return;
     }
     allPosts=posts||[];
+    // Si el enlace viene con #post-ID, abrir ese post directo
+    try{
+      let hash = window.location.hash || '';
+      if(hash.startsWith('#post-')){
+        let pid = hash.replace('#post-','');
+        setTimeout(()=>{ if(allPosts.find(x=>String(x.id)===String(pid))) openDetail(pid); }, 400);
+      }
+    }catch(e){}
     let {data:comments, error:errComments}=await supabaseClient.from('comments').select('*').order('created_at',{ascending:false});
     if(errComments) console.warn('comments error:', errComments);
     allComments=comments||[];
@@ -580,6 +588,8 @@ function render(){
         <button onclick="likePost('${p.id}',${p.likes||0})" class="flex items-center gap-1.5 rounded-full px-4 py-2.5 text-sm font-bold transition ${localStorage.getItem('liked_'+p.id)?'bg-red-500 text-white':'border border-white/15 hover:bg-white/5'}">❤️ Me gusta</button>
         <button onclick="toggleComments('${p.id}')" class="rounded-full border border-white/15 px-4 py-2.5 text-sm font-bold hover:bg-white/5">💬 Comentarios</button>
         <button onclick="openDetail('${p.id}')" class="rounded-full border border-white/15 px-4 py-2.5 text-sm font-bold hover:bg-white/5">Ver más →</button>
+        <button onclick="sharePost('${p.id}')" class="rounded-full bg-[#00FF88] px-4 py-2.5 text-sm font-bold text-black transition hover:brightness-110">↗ Compartir</button>
+        <button onclick="copyPostLink('${p.id}', this)" class="rounded-full border border-white/15 px-4 py-2.5 text-sm font-bold hover:bg-white/5">🔗 Copiar enlace</button>
       </div>
       <div id="c-${p.id}" class="hidden border-t border-white/10 bg-black/25 p-5">
         <p class="font-display text-sm font-bold tracking-wide">Comentarios (${commentsFor(p.id).length}) <span class="ml-1 font-sans text-xs font-medium text-slate-400">· Sin registro</span></p>
@@ -594,7 +604,67 @@ function render(){
   }).join('');
 }
 
+// --- COMPARTIR / COPIAR ENLACE - Solo index.html, sin tocar SQL ---
+function getPostLink(id){
+  let base = window.location.origin + window.location.pathname;
+  return base + '#post-' + id;
+}
+async function copyPostLink(id, btn){
+  let link = getPostLink(id);
+  try{
+    await navigator.clipboard.writeText(link);
+  }catch(e){
+    // Fallback para navegadores viejos
+    let ta = document.createElement('textarea'); ta.value = link; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  showShareToast('✅ Enlace copiado - ya puedes pegarlo donde quieras');
+  if(btn){ let old = btn.textContent; btn.textContent = '✅ ¡Copiado!'; setTimeout(()=>{ btn.textContent = old; }, 2000); }
+  return false;
+}
+async function sharePost(id){
+  let p = allPosts.find(x=>String(x.id)===String(id));
+  let titulo = p ? (p.titulo || p.title || 'Mira este post') : 'Mira este post';
+  let link = getPostLink(id);
+  let text = titulo + ' - Elraizercommunity';
+  if(navigator.share){
+    try{ await navigator.share({title: text, text: text, url: link}); return; }catch(e){ if(e.name==='AbortError') return; }
+  }
+  // Si no hay compartir nativo (PC), copiar enlace
+  await copyPostLink(id);
+}
+function shareWhatsApp(id){
+  let p = allPosts.find(x=>String(x.id)===String(id));
+  let titulo = p ? (p.titulo || p.title || '') : '';
+  let link = getPostLink(id);
+  window.open('https://wa.me/?text=' + encodeURIComponent(titulo + ' - Mira esto en Elraizercommunity: ' + link), '_blank');
+}
+function shareTelegram(id){
+  let p = allPosts.find(x=>String(x.id)===String(id));
+  let titulo = p ? (p.titulo || p.title || '') : '';
+  let link = getPostLink(id);
+  window.open('https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent(titulo), '_blank');
+}
+function shareX(id){
+  let p = allPosts.find(x=>String(x.id)===String(id));
+  let titulo = p ? (p.titulo || p.title || '') : '';
+  let link = getPostLink(id);
+  window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(titulo + ' - Elraizercommunity') + '&url=' + encodeURIComponent(link), '_blank');
+}
+function showShareToast(msg){
+  let t = document.getElementById('shareToast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'shareToast';
+    t.className = 'fixed bottom-6 left-1/2 z-[9999] -translate-x-1/2 rounded-full bg-[#00FF88] px-6 py-3 text-sm font-bold text-black shadow-2xl';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>{ t.style.display='none'; }, 3000);
+}
 function openDetail(id){
+  try{ history.replaceState(null,'', '#post-' + id); }catch(e){}
   let p=allPosts.find(x=>String(x.id)===String(id));
   if(!p) return;
   supabaseClient.from('posts').update({visitas:(p.visitas||0)+1}).eq('id',p.id).then(()=>{ p.visitas=(p.visitas||0)+1; render(); });
@@ -622,6 +692,20 @@ function openDetail(id){
       <button onclick="likePost('${p.id}',${p.likes||0})" class="flex items-center gap-2 rounded-full px-5 py-3 font-bold transition ${localStorage.getItem('liked_'+p.id)?'bg-red-500 text-white':'bg-red-500/15 text-red-300 hover:bg-red-500/25'}">❤️ Me gusta • ${p.likes||0}</button>
       <span class="flex items-center gap-2 text-sm text-slate-400">👁️ ${p.visitas||0} visitas</span>
       <span class="flex items-center gap-2 text-sm text-slate-400">💬 ${commentsFor(p.id).length} comentarios</span>
+    </div>
+    <div class="mt-6 rounded-3xl border border-white/10 bg-white/[.03] p-5">
+      <b class="font-display">🔗 Compartir este post</b>
+      <p class="mt-1 text-sm text-slate-400">Compártelo con tus amigos o copia el enlace para pegarlo donde quieras.</p>
+      <div class="mt-4 flex flex-wrap gap-2.5">
+        <button onclick="sharePost('${p.id}')" class="rounded-full bg-[#00FF88] px-5 py-2.5 text-sm font-bold text-black transition hover:brightness-110">↗ Compartir</button>
+        <button onclick="shareWhatsApp('${p.id}')" class="rounded-full bg-[#25D366] px-5 py-2.5 text-sm font-bold text-black">WhatsApp</button>
+        <button onclick="shareTelegram('${p.id}')" class="rounded-full bg-[#229ED9] px-5 py-2.5 text-sm font-bold text-white">Telegram</button>
+        <button onclick="shareX('${p.id}')" class="rounded-full border border-white/20 bg-black px-5 py-2.5 text-sm font-bold text-white">X</button>
+        <button onclick="copyPostLink('${p.id}', this)" class="rounded-full border border-white/15 px-5 py-2.5 text-sm font-bold hover:bg-white/5">📋 Copiar enlace</button>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <input readonly value="${getPostLink(p.id)}" onclick="this.select()" class="w-full rounded-full border border-white/10 bg-black/30 px-4 py-2.5 text-xs text-slate-300">
+      </div>
     </div>
     <div class="mt-7"><h3 class="font-display text-lg font-bold">Comentarios (${commentsFor(p.id).length})</h3>
       <div class="mt-4 grid gap-2.5 sm:grid-cols-[160px_1fr_auto]">
