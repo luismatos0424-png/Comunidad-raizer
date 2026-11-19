@@ -145,6 +145,14 @@ select.input option{background:#101017}
       <div id="adminMsg" class="text-sm font-bold text-[#00FF88]"></div>
       <h4 class="font-display font-bold">Mis posts</h4>
       <div id="adminList"></div>
+      <div class="mt-4 flex flex-wrap gap-3">
+        <button onclick="loadPapelera()" class="rounded-full border border-white/15 px-5 py-2.5 text-sm font-bold">🗑️ Ver Papelera / Restaurar posts borrados</button>
+      </div>
+      <div id="papeleraBox" class="mt-4 hidden rounded-2xl border border-white/10 bg-black/20 p-4">
+        <b>Papelera - posts borrados (copia de seguridad)</b>
+        <p class="mt-1 text-sm text-slate-400">Si un post se borró por error, aquí puedes restaurarlo. Solo el admin ve esto.</p>
+        <div id="papeleraList" class="mt-3 grid gap-2"></div>
+      </div>
 
       <!-- CONTROL DE ANUNCIOS -->
       <div class="mt-8 rounded-3xl border border-yellow-400/20 bg-yellow-400/[.04] p-5">
@@ -635,9 +643,6 @@ async function savePost(){
   };
   let data=null, error=null;
   if(editingId){
-    // Al editar NO reseteamos likes ni visitas
-    delete payload.likes; delete payload.visitas; delete payload.views;
-  }
     let res = await supabaseClient.from('posts').update(payload).eq('id', editingId).select();
     data=res.data; error=res.error;
   } else {
@@ -791,10 +796,65 @@ async function clearAds(){
   location.reload();
 }
 async function deletePost(id){
-  if(!confirm('¿Eliminar este post?')) return;
+  let p = allPosts.find(x=>String(x.id)===String(id));
+  let titulo = p ? (getF(p,'titulo','title')||'') : ('ID '+id);
+  if(!confirm('¿Eliminar este post?\n\n"' + titulo + '"\n\nSe guardará una copia en Papelera por si lo quieres restaurar.')) return;
+  let texto = prompt('Para confirmar, escribe ELIMINAR:');
+  if(texto !== 'ELIMINAR'){
+    alert('No se eliminó. Debes escribir ELIMINAR en mayúsculas para confirmar.');
+    return;
+  }
+  // 1. Guardar copia en Papelera (posts_backup) antes de borrar - así nunca se pierde para siempre
+  try{
+    if(p){
+      let backup = {...p};
+      delete backup.id;
+      backup.original_id = Number(id);
+      backup.deleted_at = new Date().toISOString();
+      // posts_backup tiene las mismas columnas que posts + original_id + deleted_at
+      let {error:errB} = await supabaseClient.from('posts_backup').insert([backup]);
+      if(errB) console.warn('No se pudo guardar backup (¿falta correr supabase.sql nuevo?):', errB.message);
+    }
+  }catch(e){ console.warn('Backup falló:', e); }
   let {error}=await supabaseClient.from('posts').delete().eq('id',id);
   if(error) return alert('No se pudo eliminar: '+error.message);
+  alert('Post eliminado, pero quedó copia en Papelera. Puedes restaurarlo desde Panel admin > Papelera.');
   loadAll();
+}
+async function loadPapelera(){
+  let box = document.getElementById('papeleraBox');
+  let list = document.getElementById('papeleraList');
+  if(!box || !list) return;
+  box.classList.toggle('hidden');
+  if(box.classList.contains('hidden')) return;
+  list.innerHTML = 'Cargando papelera...';
+  let {data, error} = await supabaseClient.from('posts_backup').select('*').order('deleted_at',{ascending:false}).limit(50);
+  if(error){ list.innerHTML = 'No se pudo cargar papelera: '+error.message+'<br>Corre el supabase.sql de este ZIP (crea la tabla posts_backup).'; return; }
+  if(!data || data.length===0){ list.innerHTML = 'Papelera vacía. No hay posts para restaurar.'; return; }
+  list.innerHTML = data.map(b=>`<div class="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-black/20 px-4 py-3"><span class="min-w-0 flex-1 truncate text-sm font-bold">${esc(getF(b,'titulo','title')||'(sin título)')} <span class="text-xs text-slate-400">- borrado ${new Date(b.deleted_at).toLocaleString('es-ES')}</span></span><button onclick="restorePost('${b.original_id || b.id}', '${b.id}')" class="rounded-full bg-[#00FF88] px-4 py-1.5 text-xs font-bold text-black">Restaurar</button><button onclick="deleteBackup('${b.id}')" class="text-xs font-bold text-red-300">Borrar para siempre</button></div>`).join('');
+}
+async function restorePost(originalId, backupId){
+  let {data:backup, error:errB} = await supabaseClient.from('posts_backup').select('*').eq('id', backupId).single();
+  if(errB || !backup) return alert('No se pudo cargar la copia: '+(errB?.message||''));
+  let payload = {...backup};
+  delete payload.id; delete payload.original_id; delete payload.deleted_at; delete payload.created_at;
+  // Al restaurar, mandar bilingüe de nuevo
+  payload.titulo = getF(backup,'titulo','title'); payload.title = payload.titulo;
+  payload.juego = getF(backup,'juego','game'); payload.game = payload.juego;
+  payload.plataforma = getF(backup,'plataforma','platform'); payload.platform = payload.plataforma;
+  payload.categoria = getF(backup,'categoria','category'); payload.category = payload.categoria;
+  let {error} = await supabaseClient.from('posts').insert([payload]).select();
+  if(error) return alert('No se pudo restaurar: '+error.message);
+  // Borrar de papelera después de restaurar
+  await supabaseClient.from('posts_backup').delete().eq('id', backupId);
+  alert('✅ Post restaurado');
+  loadAll(); loadPapelera();
+}
+async function deleteBackup(backupId){
+  if(!confirm('¿Borrar esta copia para siempre? Ya no se podrá restaurar.')) return;
+  let {error} = await supabaseClient.from('posts_backup').delete().eq('id', backupId);
+  if(error) return alert('No se pudo borrar: '+error.message);
+  loadPapelera();
 }
 </script>
 </body>

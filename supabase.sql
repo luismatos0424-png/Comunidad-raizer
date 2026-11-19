@@ -151,3 +151,43 @@ end $$;
 
 -- Si app_settings no tiene ads, poner uno vacío por defecto
 update app_settings set ads = '{"top":{"activo":false,"imagen":"","link":"","codigo":""},"feed":{"activo":false,"imagen":"","link":"","codigo":""},"sidebar":{"activo":false,"imagen":"","link":"","codigo":""}}' where id = 1 and (ads is null or ads = '');
+
+
+-- === PROTECCIÓN CONTRA BORRADO TOTAL - NUEVO ===
+-- 1. Tabla Papelera: guarda copia de cada post antes de borrarlo.
+-- Así si borras por error, lo restauras desde Panel admin > Papelera.
+create table if not exists posts_backup (
+  id bigint generated always as identity primary key,
+  original_id bigint,
+  titulo text, title text,
+  juego text, game text,
+  plataforma text, platform text,
+  categoria text, category text,
+  descripcion_corta text, short_desc text,
+  descripcion text, long_desc text,
+  video_url text,
+  descarga_url text, downloads text, descarga_label text,
+  imagen_url text, cover text,
+  pasos text, steps text,
+  requisitos_min text, req_min text,
+  requisitos_rec text, req_rec text,
+  tags text, visitas int default 0, views int default 0, likes int default 0,
+  created_at timestamptz default now(),
+  deleted_at timestamptz default now()
+);
+alter table posts_backup disable row level security;
+
+-- 2. NUNCA uses DROP TABLE en este proyecto.
+-- El archivo viejo supabase-CORREGIDO.sql SÍ tenía:
+--   BORRAR-TABLA comments (comando peligroso)
+--   BORRAR-TABLA posts (comando peligroso)
+--   BORRAR-TABLA app_settings (comando peligroso)
+-- Si corriste ESE archivo viejo otra vez, ESE fue el que borró todos los posts.
+-- Este archivo NUEVO NO tiene ningún comando de borrado de tabla, DELETE ni TRUNCATE de posts.
+-- Solo agrega columnas y crea la papelera. No borra nada.
+
+-- VERIFICAR si los posts de verdad se borraron o solo no se ven:
+-- select count(*) as total_posts from posts;
+-- select count(*) as total_papelera from posts_backup;
+-- Si total_posts = 0 y total_papelera > 0, restaura desde Papelera en la web.
+-- Si los 2 son 0 y corriste el archivo viejo con DROP, ve a Supabase > Database > Backups > Restore para recuperar.
