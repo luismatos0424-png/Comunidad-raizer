@@ -1,42 +1,36 @@
-# FIX - Se volvieron a borrar los posts - PROTEGIDO
+# FIX 23502 - null value in column "title"
 
-## Por qué se borraron (lo más probable)
-Este ZIP nuevo NO borra posts. Lo verifiqué: no tiene ningún DROP, DELETE ni TRUNCATE de posts.
+## Qué era el error de tu captura
+Tu captura dice:
+"NO se guardó. Error: null value in column \"title\" of relation \"posts\" violates not-null constraint (code 23502)"
 
-Lo que SÍ borra es el archivo VIEJO supabase-CORREGIDO.sql que tiene al inicio:
-  drop table if exists comments cascade;
-  drop table if exists posts cascade;
-  drop table if exists app_settings cascade;
+Eso NO es que falte una columna. Es lo contrario:
+- Tu tabla en Supabase se creó con el esquema en INGLÉS: title (NOT NULL), game (NOT NULL), platform, category...
+- El index nuevo mandaba en ESPAÑOL: titulo, juego, plataforma...
+- Como nunca le llegaba "title", Supabase lo rechazaba porque title es NOT NULL y quedaba en null.
 
-Si corriste ESE archivo viejo otra vez pensando que era el nuevo, ese fue el que borró todo.
-A partir de ahora, NO vuelvas a correr ningún archivo que diga CORREGIDO o que tenga DROP TABLE.
-Solo usa el supabase.sql de ESTE ZIP.
+Por eso nunca se guardaba ningún post, aunque la conexión sí funcionaba.
 
-## Cómo saber si de verdad se borraron o solo no se ven
-1. Supabase > SQL Editor > corre:
-   select count(*) as total_posts from posts;
-   select count(*) as total_papelera from posts_backup;
-- Si total_posts > 0 pero en la web salen 0: es RLS o caché, no borrado. Corre el supabase.sql de este ZIP y recarga con Ctrl+Shift+R.
-- Si total_posts = 0 y total_papelera > 0: restaura desde la web (abajo).
-- Si los 2 son 0 y corriste el archivo viejo con DROP: ve a Supabase > Database > Backups > Restore. Supabase guarda backups automáticos.
+## Qué hace este ZIP
+1. index.html BILINGÜE: ahora manda AMBOS: titulo + title, juego + game, plataforma + platform, etc.
+   Así nunca más da 23502, no importa si tu tabla es en inglés o en español.
+   Y al mostrar, lee titulo O title, juego O game, etc.
 
-## Qué trae este ZIP para que no vuelva a pasar
-1. Borrar ahora es PROTEGIDO:
-   - Al pulsar Eliminar, te muestra el título del post
-   - Te pide escribir ELIMINAR en mayúsculas para confirmar
-   - ANTES de borrar, guarda una copia en Papelera (tabla posts_backup)
+2. supabase.sql BILINGÜE: 
+   - Agrega todas las columnas que faltan (español + inglés)
+   - Quita el NOT NULL de title, titulo, game, juego, text, texto
+   - Convierte downloads / steps de jsonb a texto (para que no falle por tipo)
+   - Copia los datos: titulo <-> title, juego <-> game, etc.
+   - Desactiva RLS
+   NO BORRA tus posts.
 
-2. Papelera en Panel admin:
-   - Botón "Ver Papelera / Restaurar posts borrados"
-   - Ahí ves los posts borrados con fecha y botón Restaurar
-   - Restaurar los vuelve a poner en la web
-   - Borrar para siempre los quita de la papelera
+## Pasos (en este orden)
+1. Supabase > SQL Editor > New Query > pega TODO supabase.sql de este ZIP > Run. Debe decir Success.
+2. GitHub > reemplaza index.html y config.js por los de este ZIP > Commit.
+   - Si ya tienes diagnostico.html en GitHub, déjalo, no hace falta subirlo de nuevo.
+3. Vercel > espera 2 min > abre con Ctrl+Shift+R.
+4. Entra a Acceder > crea un post de prueba > debe salir "✅ Post guardado".
+5. Si vuelve a salir 23502, dime qué columna dice ahora (title, game, text...) y te lo ajusto.
 
-3. supabase.sql NUEVO: crea posts_backup, NO tiene DROP, solo agrega columnas.
-
-## Pasos
-1. Supabase > SQL Editor > pega TODO supabase.sql de este ZIP > Run. Debe decir Success.
-2. GitHub > reemplaza index.html y config.js > Commit.
-3. Vercel > espera 2 min > Ctrl+Shift+R.
-4. Entra a Acceder > Panel admin > Ver Papelera. Si hay copias ahí, pulsa Restaurar.
-5. BORRA de tu PC el archivo viejo supabase-CORREGIDO.sql para no correrlo por error otra vez.
+## Si ya tenías posts en inglés
+El SQL los copia a español, así que van a seguir apareciendo en la web.

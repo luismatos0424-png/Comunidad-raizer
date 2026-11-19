@@ -35,8 +35,6 @@ async function test(){
       + (data&&data.length>0 ? '<b>Primer post:</b> '+(data[0].titulo||data[0].title||'(sin título)')+' - '+ (data[0].plataforma||'')+'<br><br><span class="ok">Si aquí dice que hay posts pero en la web principal no se ven, es que la web principal es el archivo VIEJO (caché de Vercel). Borra caché con Ctrl+Shift+R.</span>' : '<b>La tabla está VACÍA de verdad.</b><br>No es bug de conexión. Hay que crear el primer post desde Acceder en la web principal. Si ya creaste posts y aquí dice 0, es que no se guardaron porque faltaba una columna - corre supabase.sql y vuelve a crear.');
     // Probar settings también
     let {data:s2, error:e2} = await client.from('app_settings').select('*').eq('id',1).single();
-    let {data:bak} = await client.from('posts_backup').select('id').limit(100);
-    result.innerHTML += '<br><b>En Papelera:</b> ' + ((bak||[]).length) + ' posts (se pueden restaurar desde Panel admin > Papelera)';
     result.innerHTML += '<br><br><b>app_settings id=1:</b> ' + (e2 ? '<span class="err">Error: '+e2.message+'</span>' : '✅ Existe, total_visitas='+(s2?.total_visitas||0));
   }catch(e){
     result.innerHTML = '<span class="err">❌ No se pudo hacer fetch:</span> '+e.message+'<br><br>Esto pasa si la URL está mal, el proyecto está Pausado en Supabase (dale Restore), o el navegador bloquea la conexión.';
