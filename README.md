@@ -1,27 +1,24 @@
-# FIX CONEXIÓN - Ya no sale el banner verde viejo "No se pudo conectar..."
+# VERIFICAR - Diagnóstico real
 
-Este ZIP es el MISMO diseño exacto "Bienvenidos a mi comunidad", pero YA NO usa el banner genérico verde.
-Ahora si falla, sale una caja AMARILLA que dice el error EXACTO + botón "Probar conexión".
+Este ZIP trae un archivo nuevo: diagnostico.html
 
-## Si sigues viendo el banner verde viejo
-Ese banner NO es de este ZIP. Es del archivo viejo que todavía está en Vercel.
-Significa que GitHub todavía no reemplazó index.html, o Vercel todavía no redeplegó, o estás viendo caché.
+## Cómo usarlo
+1. Supabase > SQL Editor > pega TODO supabase.sql > Run
+2. GitHub > sube TODOS los archivos de este ZIP:
+   - index.html (reemplazar)
+   - config.js (reemplazar)
+   - diagnostico.html (NUEVO - subirlo)
+   - supabase.sql (reemplazar)
+3. Vercel > espera 2 min
+4. Abre en el navegador:
+   https://comunidadraizer.vercel.app/diagnostico.html
+   con Ctrl+Shift+R
 
-Cómo comprobarlo en 10 segundos:
-1. Entra a GitHub > tu repo > abre index.html > busca (Ctrl+F) la palabra "debugBox"
-   - Si NO aparece "debugBox", estás viendo el archivo viejo. No se reemplazó.
-   - Si SÍ aparece, ya es el nuevo.
-2. Entra a Vercel > tu proyecto > Deployments > mira la hora del último deploy. Debe ser de hace pocos minutos.
-3. Abre la web con Ctrl+Shift+R (no solo F5) o en incógnito.
+Esa página te dice el error EXACTO, sin banner genérico:
+- Si dice "Posts encontrados: 3" pero en la web principal no se ven -> la web principal es el archivo viejo / caché.
+- Si dice "Tabla vacía" -> no hay posts guardados, hay que crear el primero desde Acceder.
+- Si dice Error 42P01 -> tabla no existe, corre supabase.sql.
+- Si dice 401 / llave mal -> copia de nuevo la llave publishable.
 
-## Pasos
-1. Supabase > SQL Editor > pega TODO supabase.sql de este ZIP > Run (desactiva RLS y agrega columnas)
-2. GitHub > reemplaza index.html Y config.js por los de este ZIP > Commit
-3. Vercel > espera 2 min > abre con Ctrl+Shift+R
-4. Si sale la caja amarilla, pulsa "Probar conexión" y dime qué Status te da (200, 401, 404) y qué texto sale.
-
-## Qué significa cada Status en Probar conexión
-- 200 = Supabase sí responde. Si aún no se ven posts, es tabla vacía (count=0) o RLS. Corre supabase.sql.
-- 401 = Llave mal copiada. Supabase > Settings > API Keys > copia la Publishable de nuevo a config.js.
-- 404 = URL mal o tabla posts no existe. Corre supabase.sql y revisa que la URL no tenga /rest/v1/ al final.
-- No se pudo hacer fetch = URL mal, proyecto Paused (dale Restore en Supabase), o navegador bloqueando.
+## Por qué el verificador de Meta AI no puede leer tu web
+Tu web es 100% JavaScript (Tailwind + Supabase). La herramienta de lectura no puede renderizar JS, por eso dice "no readable text". No es que tu web esté caída, es que hay que verificarla con diagnostico.html que sí muestra el resultado en pantalla.

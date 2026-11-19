@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diagnóstico - Elraizercommunity</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>body{font-family:system-ui;background:#08080D;color:#fff;padding:20px;max-width:700px;margin:0 auto} .box{background:#14141c;border:1px solid #333;border-radius:14px;padding:16px;margin:12px 0;line-height:1.6} .ok{color:#00FF88} .err{color:#FF8080} code{background:#000;padding:2px 6px;border-radius:6px;word-break:break-all} button{background:#00FF88;border:0;padding:12px 20px;border-radius:999px;font-weight:800;cursor:pointer} a{color:#00FF88}</style>
+</head><body>
+<h1>🔍 Diagnóstico Elraizercommunity</h1>
+<p>Abre esta página en: <b>https://comunidadraizer.vercel.app/diagnostico.html</b></p>
+<div class="box" id="info">Cargando...</div>
+<div class="box" id="result">Probando conexión...</div>
+<button onclick="test()">🔄 Volver a probar</button>
+<p><a href="/">← Volver a la web</a></p>
+<script>
+async function test(){
+  let info=document.getElementById('info');
+  let result=document.getElementById('result');
+  let u = (typeof SUPABASE_URL!=='undefined' ? SUPABASE_URL : window.SUPABASE_URL);
+  let k = (typeof SUPABASE_ANON_KEY!=='undefined' ? SUPABASE_ANON_KEY : window.SUPABASE_ANON_KEY);
+  info.innerHTML = '<b>Librería Supabase:</b> ' + (typeof supabase!=='undefined' ? '<span class="ok">✅ Cargó</span>' : '<span class="err">❌ NO cargó (CDN bloqueado)</span>') + '<br>'
+    + '<b>config.js URL:</b> <code>'+ (u||'VACÍA / NO CARGÓ') +'</code><br>'
+    + '<b>Termina en /rest/v1/ ?</b> ' + (String(u||'').endsWith('/rest/v1/')||String(u||'').endsWith('/rest/v1') ? '<span class="err">❌ SÍ - QUÍTALO, así no conecta</span>' : '<span class="ok">✅ NO - bien</span>') + '<br>'
+    + '<b>Llave:</b> <code>'+ (k ? k.slice(0,18)+'...' : 'VACÍA') +'</code> - Empieza con sb_publishable_ ? ' + (String(k||'').startsWith('sb_publishable_') ? '<span class="ok">✅ SÍ</span>' : '<span class="err">❌ NO - llave mal copiada</span>') + '<br>'
+    + '<b>¿Estás viendo esta página en Vercel?</b> Si la URL arriba es comunidadraizer.vercel.app/diagnostico.html, sí.';
+  if(typeof supabase==='undefined' || !u || !k){ result.innerHTML='<span class="err">No se puede probar: falta librería o config.</span>'; return; }
+  result.innerHTML='Probando fetch a Supabase...';
+  try{
+    let client = supabase.createClient(u,k);
+    let {data, error} = await client.from('posts').select('*').order('created_at',{ascending:false});
+    if(error){
+      result.innerHTML = '<span class="err">❌ ERROR al leer posts</span><br><b>Mensaje:</b> '+error.message+'<br><b>Code:</b> '+(error.code||'')+'<br><b>Hint:</b> '+(error.hint||'')+'<br><br>Si el code es <b>42P01</b> = tabla posts no existe. Corre supabase.sql.<br>Si el code es <b>PGRST116</b> o similar = RLS o columna.';
+      return;
+    }
+    result.innerHTML = '<span class="ok">✅ Supabase SÍ responde</span><br><b>Posts encontrados:</b> '+(data||[]).length+'<br>'
+      + (data&&data.length>0 ? '<b>Primer post:</b> '+(data[0].titulo||'(sin título)')+' - '+ (data[0].plataforma||'')+'<br><br><span class="ok">Si aquí dice que hay posts pero en la web principal no se ven, es que la web principal es el archivo VIEJO (caché de Vercel). Borra caché con Ctrl+Shift+R.</span>' : '<b>La tabla está VACÍA de verdad.</b><br>No es bug de conexión. Hay que crear el primer post desde Acceder en la web principal. Si ya creaste posts y aquí dice 0, es que no se guardaron porque faltaba una columna - corre supabase.sql y vuelve a crear.');
+    // Probar settings también
+    let {data:s2, error:e2} = await client.from('app_settings').select('*').eq('id',1).single();
+    result.innerHTML += '<br><br><b>app_settings id=1:</b> ' + (e2 ? '<span class="err">Error: '+e2.message+'</span>' : '✅ Existe, total_visitas='+(s2?.total_visitas||0));
+  }catch(e){
+    result.innerHTML = '<span class="err">❌ No se pudo hacer fetch:</span> '+e.message+'<br><br>Esto pasa si la URL está mal, el proyecto está Pausado en Supabase (dale Restore), o el navegador bloquea la conexión.';
+  }
+}
+test();
+</script></body></html>
