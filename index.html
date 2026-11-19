@@ -133,7 +133,20 @@ select.input option{background:#101017}
         <label class="text-sm font-bold">Texto del botón de descarga<input id="fDescargaLabel" value="Descargar juego" class="input"></label>
         <label class="text-sm font-bold">Tags (separados por coma)<input id="fTags" placeholder="minecraft, shaders, kick" class="input"></label>
       </div>
-      <label class="text-sm font-bold">Pasos (uno por línea)<textarea id="fPasos" rows="4" placeholder="Instala Java 17&#10;Descarga OptiFine&#10;Abre Minecraft y entra en Shaders" class="input"></textarea></label>
+      <div>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <label class="text-sm font-bold">Pasos - Cómo instalar paso a paso</label>
+          <span class="text-xs font-bold text-[#00FF88]">La persona verá Paso 1, Paso 2...</span>
+        </div>
+        <p class="mt-1 text-xs leading-relaxed text-slate-400">Escribe cada paso en su casilla. Pulsa <b class="text-white">+ Añadir paso</b> para agregar Paso 3, Paso 4, los que necesites.</p>
+        <div id="pasosContainer" class="mt-3 grid gap-3"></div>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <button type="button" onclick="addPasoField()" class="rounded-full bg-white px-5 py-2.5 text-sm font-bold text-black transition hover:brightness-110">+ Añadir paso</button>
+          <button type="button" onclick="removeLastPaso()" class="rounded-full border border-white/15 px-5 py-2.5 text-sm font-bold">Quitar último paso</button>
+        </div>
+        <!-- Guardado interno: se sigue guardando como texto con un paso por línea, igual que antes, para no tocar SQL -->
+        <textarea id="fPasos" class="hidden"></textarea>
+      </div>
       <div class="grid gap-5 md:grid-cols-2">
         <label class="text-sm font-bold">Requisitos mínimos<textarea id="fReqMin" rows="2" placeholder="CPU i3, 8 GB RAM..." class="input"></textarea></label>
         <label class="text-sm font-bold">Requisitos recomendados<textarea id="fReqRec" rows="2" placeholder="CPU i5, 16 GB RAM, RTX..." class="input"></textarea></label>
@@ -365,10 +378,70 @@ async function checkAdmin(){
   }
 }
 function logout(){isAdmin=false;document.getElementById('adminPanel').classList.add('hidden');}
+// --- PASOS DINÁMICOS: Paso 1, Paso 2, + Añadir paso (solo index.html, SQL no cambia) ---
+function renumberPasos(){
+  let items = document.querySelectorAll('#pasosContainer .paso-item');
+  items.forEach((el, i)=>{
+    let badge = el.querySelector('.paso-badge');
+    if(badge) badge.textContent = 'Paso ' + (i+1);
+    let input = el.querySelector('.paso-input');
+    if(input) input.placeholder = 'Ej: ' + (i===0 ? 'Instala Java 17' : i===1 ? 'Descarga OptiFine' : i===2 ? 'Abre Minecraft y entra en Shaders' : 'Escribe el paso ' + (i+1));
+  });
+}
+function addPasoField(value){
+  let container = document.getElementById('pasosContainer');
+  if(!container) return;
+  let index = container.querySelectorAll('.paso-item').length;
+  let div = document.createElement('div');
+  div.className = 'paso-item flex items-center gap-3 rounded-2xl border border-white/10 bg-black/20 p-3';
+  div.innerHTML = '<span class="paso-badge grid h-9 w-16 shrink-0 place-items-center rounded-full bg-[#00FF88] px-2 text-xs font-black text-black">Paso ' + (index+1) + '</span><input class="paso-input input !m-0 flex-1" placeholder="Escribe el paso ' + (index+1) + '"><button type="button" onclick="removePaso(this)" class="shrink-0 rounded-full border border-white/15 px-3 py-2 text-xs font-bold text-red-300" title="Quitar este paso">✕</button>';
+  container.appendChild(div);
+  let input = div.querySelector('.paso-input');
+  if(input && value) input.value = value;
+  renumberPasos();
+  return div;
+}
+function removePaso(btn){
+  let container = document.getElementById('pasosContainer');
+  let items = container.querySelectorAll('.paso-item');
+  if(items.length <= 1){ alert('Deja al menos 1 paso.'); return; }
+  btn.closest('.paso-item').remove();
+  renumberPasos();
+}
+function removeLastPaso(){
+  let container = document.getElementById('pasosContainer');
+  let items = container.querySelectorAll('.paso-item');
+  if(items.length <= 1){ alert('Deja al menos 1 paso.'); return; }
+  items[items.length-1].remove();
+  renumberPasos();
+}
+function renderPasosFields(texto){
+  let container = document.getElementById('pasosContainer');
+  if(!container) return;
+  container.innerHTML = '';
+  let lines = (texto||'').split('\n').map(s=>s.trim()).filter(s=>s!=='');
+  // Quitar prefijos "Paso 1:" si el post viejo los tenía guardados, para no duplicar "Paso 1: Paso 1:"
+  lines = lines.map(s=>s.replace(/^Paso\s*\d+\s*[:.-]\s*/i,'').trim());
+  if(lines.length===0) lines = ['', ''];
+  lines.forEach(l=>addPasoField(l));
+  // Si solo venía 1 paso, dejar 2 casillas vacías para que se vea Paso 1 y Paso 2
+  if(lines.length===1) addPasoField('');
+  renumberPasos();
+}
+function collectPasos(){
+  let inputs = document.querySelectorAll('#pasosContainer .paso-input');
+  let vals = Array.from(inputs).map(i=>i.value.trim()).filter(v=>v!=='');
+  // Guardar sin prefijo "Paso X:" - el detalle ya muestra el número en el círculo verde
+  let joined = vals.join('\n');
+  let hidden = document.getElementById('fPasos');
+  if(hidden) hidden.value = joined;
+  return joined;
+}
 function clearForm(){
   editingId=null;
-  ['fTitulo','fJuego','fDescCorta','fDesc','fVideo','fDescarga','fImagen','fPasos','fReqMin','fReqRec','fTags'].forEach(id=>{let el=document.getElementById(id); if(el) el.value='';});
+  ['fTitulo','fJuego','fDescCorta','fDesc','fVideo','fDescarga','fImagen','fReqMin','fReqRec','fTags'].forEach(id=>{let el=document.getElementById(id); if(el) el.value='';});
   let dl=document.getElementById('fDescargaLabel'); if(dl) dl.value='Descargar juego';
+  renderPasosFields('');
   let btn=document.querySelector('button[onclick="savePost()"]'); if(btn) btn.textContent='Guardar post';
   let c=document.getElementById('cancelEditBtn'); if(c) c.remove();
   // No borramos adminMsg aquí para que el mensaje de guardado quede visible
@@ -619,7 +692,7 @@ async function savePost(){
   let _descarga=document.getElementById('fDescarga').value.trim();
   let _descargaLabel=document.getElementById('fDescargaLabel').value.trim()||'Descargar juego';
   let _imagen=document.getElementById('fImagen').value.trim();
-  let _pasos=document.getElementById('fPasos').value.trim();
+  let _pasos=collectPasos();
   let _reqMin=document.getElementById('fReqMin').value.trim();
   let _reqRec=document.getElementById('fReqRec').value.trim();
   let _tags=document.getElementById('fTags').value.trim();
@@ -679,7 +752,7 @@ async function editPost(id){
   document.getElementById('fDescarga').value = getDescarga(p)||'';
   document.getElementById('fDescargaLabel').value = p.descarga_label||'Descargar juego';
   document.getElementById('fImagen').value = getCover(p)||'';
-  document.getElementById('fPasos').value = getF(p,'pasos','steps')||'';
+  renderPasosFields(getF(p,'pasos','steps')||'');
   document.getElementById('fReqMin').value = getF(p,'requisitos_min','req_min')||'';
   document.getElementById('fReqRec').value = getF(p,'requisitos_rec','req_rec')||'';
   document.getElementById('fTags').value = p.tags||'';
@@ -866,6 +939,11 @@ async function deleteBackup(backupId){
   if(error) return alert('No se pudo borrar: '+error.message);
   loadPapelera();
 }
+// Inicializar con Paso 1 y Paso 2 vacíos al abrir la página
+document.addEventListener('DOMContentLoaded', function(){
+  let c = document.getElementById('pasosContainer');
+  if(c && c.children.length===0) renderPasosFields('');
+});
 </script>
 </body>
 </html>
